@@ -1,0 +1,5 @@
+require 'spree_core'
+require 'spree_extension'
+require 'spree_customized_storefront/engine'
+require 'spree_customized_storefront/version'
+require 'spree_customized_storefront/configuration'
