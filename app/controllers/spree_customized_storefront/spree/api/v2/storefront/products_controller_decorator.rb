@@ -4,9 +4,25 @@ module SpreeCustomizedStorefront::Spree
     module V2
       module Storefront
         module ProductsControllerDecorator
+
           def search
             page = params[:page].present? ? params[:page].to_i : 1
             per_page = params[:per_page].present? ? params[:per_page].to_i : 24
+            fetch_products(customized_collection)
+          end
+
+          private
+
+          def customized_collection
+            @customized_collection ||= if defined?(customized_collection_finder)
+                              customized_collection_finder.new(scope: scope, params: finder_params).execute
+                            else
+                              scope
+                            end
+          end
+
+          def customized_collection_finder
+            Spree::Product::CustomizedFind
           end
         end
       end

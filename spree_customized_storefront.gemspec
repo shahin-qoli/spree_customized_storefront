@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.name        = 'spree_customized_storefront'
   s.version     = SpreeCustomizedStorefront::VERSION
   s.summary     = "Spree Commerce Customized storefront Extension"
-  s.required_ruby_version = '>= 3.0'
+  s.required_ruby_version = '>= 2.5'
 
   s.author    = 'You'
   s.email     = 'you@example.com'
@@ -25,5 +25,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'spree_emails', spree_version
   s.add_dependency 'spree_extension'
 
+  s.add_dependency 'spree_core', spree_version
   s.add_development_dependency 'spree_dev_tools'
 end
+

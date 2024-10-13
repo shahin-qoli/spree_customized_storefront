@@ -3,7 +3,7 @@ Spree::Core::Engine.add_routes do
     namespace :v2 do
       namespace :storefront do
         resources :products, only: %i[index show] do
-          collectin do
+          collection do
             get "search"
           end
         end
