@@ -70,6 +70,8 @@ module Spree
       end
 
       def taxons?
+        p "haaaaaaaaaaadasasssssss"
+        p taxons
         taxons.present?
       end
       
