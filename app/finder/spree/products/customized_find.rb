@@ -58,7 +58,7 @@ module Spree
         # products = show_only_purchasable(products)
         # products = ordered(products)
 
-        product_ids.distinct
+        product_ids
       end
 
       private
