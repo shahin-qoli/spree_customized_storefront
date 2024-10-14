@@ -18,8 +18,6 @@ module Spree::CustomizedCaching::Product
 					Rails.cache.delete(cache_key)
 				end
 				Rails.cache.write(cache_key, data, expires_in: 24.hours)
-				p "CAAAAAAAAAAAACHE KEEEEEEEEEEEEEEEEEEEEY"
-				p cache_key
 			end
 		end
 
@@ -30,7 +28,7 @@ module Spree::CustomizedCaching::Product
 		end
 
 		def fetch_product_ids_to_cache
-			Spree::Taxon.find(miarze_shop_taxon_id).products.pluck(:id)
+			Spree::Taxon.find(miarze_shop_taxon_id).products.pluck(&:id)
 		end
 
 		def spree_product_serializer

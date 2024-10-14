@@ -1,8 +1,8 @@
 module Spree
   module Products
     class CustomizedFind
-      def initialize(scope:, params:, current_currency: nil)
-        @scope = scope
+      def initialize(params:, current_currency: nil)
+        @scope = Spree::Taxon.find(10673).products.pluck(:id)
 
         ActiveSupport::Deprecation.warn('`current_currency` param is deprecated and will be removed in Spree 5') if current_currency
 
@@ -14,7 +14,7 @@ module Spree
         end
         @customized             = params.dig(:filter, :customized)
         @store            = params[:store] || Spree::Store.default        
-        @taxons           = taxon_ids(params.dig(:filter, :taxons))
+        @taxons           = params.dig(:filter, :taxons)
         @in_stock         = params.dig(:filter, :in_stock)
 
         # @ids              = String(params.dig(:filter, :ids)).split(',')
@@ -39,7 +39,7 @@ module Spree
       def execute
         product_ids = by_customized(scope)
         product_ids = by_taxons(product_ids)
-        products = show_only_stock(products)
+        # products = show_only_stock(products)
         
         # products = by_ids(scope)
         # products = by_skus(products)
@@ -58,13 +58,13 @@ module Spree
         # products = show_only_purchasable(products)
         # products = ordered(products)
 
-        products.distinct
+        product_ids.distinct
       end
 
       private
 
       attr_reader :ids, :skus, :price, :currency, :taxons, :concat_taxons, :name, :options, :option_value_ids, :scope,
-                  :sort_by, :deleted, :discontinued, :properties, :store, :in_stock, :backorderable, :purchasable
+                  :sort_by, :deleted, :discontinued, :properties, :store, :in_stock, :backorderable, :purchasable,:customized
       def customized?
           customized.present?
       end
@@ -74,7 +74,7 @@ module Spree
       end
       
       def by_customized(products)
-          return products.pluck(:id) unless customized?
+          return products unless customized?
           Spree::Product.search(customized, match: :word).pluck(:id)  
       end
 
