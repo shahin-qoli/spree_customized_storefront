@@ -14,7 +14,7 @@ module Spree
         end
         @customized             = params.dig(:filter, :customized)
         @store            = params[:store] || Spree::Store.default        
-        @taxons           = params.dig(:filter, :taxons)
+        @taxons           = taxon_ids(params.dig(:filter, :taxons))
         @in_stock         = params.dig(:filter, :in_stock)
 
         # @ids              = String(params.dig(:filter, :ids)).split(',')
@@ -85,7 +85,12 @@ module Spree
           Product.search(where: { taxon_ids: taxons, product_id: product_ids }).pluck(:id)  
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
       end
+      def taxon_ids(taxons_ids)
+        return if taxons_ids.nil? || taxons_ids.to_s.blank?
 
+        taxons = store.taxons.where(id: taxons_ids.to_s.split(','))
+        taxons.map(&:cached_self_and_descendants_ids).flatten.compact.uniq.map(&:to_s)
+      end
     end
   end
 end
