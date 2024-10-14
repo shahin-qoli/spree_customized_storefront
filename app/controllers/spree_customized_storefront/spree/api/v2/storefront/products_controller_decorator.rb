@@ -66,7 +66,7 @@ module SpreeCustomizedStorefront::Spree
           end          
 
           def customized_collect_option_types(products_data)
-            option_type_ids = products_data[:included].select{ |item| item[:type] == :option_type}.map(:id)
+            option_type_ids = products_data[:included].select{ |item| item[:type] == :option_type}.map(&:id)
             Spree::OptionType.where(id: option_type_ids).map do |ot|
               {
                 :id => ot.id,
