@@ -80,7 +80,7 @@ module Spree
 
       def by_taxons(product_ids)
           return product_ids unless taxons?
-          Product.search(where: { taxon_ids: taxons, product_id: product_ids }, index_name: 'product_taxon_index').pluck(:id)  
+          Product.search(where: { taxon_ids: taxons, product_id: product_ids }).pluck(:id)  
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
       end
 
