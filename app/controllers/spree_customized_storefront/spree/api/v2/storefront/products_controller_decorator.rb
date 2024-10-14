@@ -9,7 +9,7 @@ module SpreeCustomizedStorefront::Spree
             page = params[:page].present? ? params[:page].to_i : 1
             per_page = params[:per_page].present? ? params[:per_page].to_i : 24
             products_data = fetch_products(customized_collection)
-            meta = collect_meta_data(products_data)
+            meta = collect_meta_data(products_data, per_page)
             p "ALLLLLLLLLLLLLAAAAAAAAAAAh"
             p @total_pages
             links = customized_collection_links(page,@total_pages)
