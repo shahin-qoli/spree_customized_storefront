@@ -82,14 +82,13 @@ module Spree
 
       def by_taxons(product_ids)
           return product_ids unless taxons?
-          Product.search(where: { taxon_ids: taxons, product_id: product_ids }).pluck(:id)  
+          Spree::Product.search(where: { taxon_ids: taxons, product_id: product_ids }).pluck(:id)  
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
       end
       def taxon_ids(taxons_ids)
         return if taxons_ids.nil? || taxons_ids.to_s.blank?
 
-        taxons = store.taxons.where(id: taxons_ids.to_s.split(','))
-        taxons.map(&:cached_self_and_descendants_ids).flatten.compact.uniq.map(&:to_s)
+        taxons_ids.to_s.split(',')
       end
     end
   end
