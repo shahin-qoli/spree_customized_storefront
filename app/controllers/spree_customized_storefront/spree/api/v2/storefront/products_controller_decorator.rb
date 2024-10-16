@@ -72,7 +72,7 @@ module SpreeCustomizedStorefront::Spree
 
           def collect_meta_data(products_data, per_page)
               count = products_data[:data].size < per_page ? products_data[:data].size : per_page 
-              @total_pages = (@total_count / per_page).to_i
+              @total_pages = (@total_count / per_page).to_i > 0 ? (@total_count / per_page).to_i : 1
               option_types = customized_collect_option_types(products_data)
               {
                 :count => count,
