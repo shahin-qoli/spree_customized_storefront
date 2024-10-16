@@ -56,18 +56,36 @@ module SpreeCustomizedStorefront::Spree
           end
 
           def integrate_data(data)
-            if data.size < 1
-              return {:data => [],:included => []}
-            end
+            return { data: [], included: [] } if data.size < 1
+
             base = data.first
+            unique_included = {}
+
             data.each_with_index do |d, i|
               next if i == 0
-              base = base.merge(d) do |key,old_value,new_value|
-                old_value + new_value
+
+              # Merge data into base
+              base = base.merge(d) do |key, old_value, new_value|
+                if key == 'included'
+                  # Handle the merging of 'included' array
+                  merged_included = old_value + new_value
+
+                  # Avoid duplicates by using a hash keyed by 'id'
+                  merged_included.each do |item|
+                    unique_included[item['id']] ||= item
+                  end
+
+                  # Return the unique included items
+                  unique_included.values
+                else
+                  old_value + new_value
+                end
               end
             end
+
             base
           end
+
 
 
           def collect_meta_data(products_data, per_page)
