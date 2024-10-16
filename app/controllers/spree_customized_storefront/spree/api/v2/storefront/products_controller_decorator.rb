@@ -7,19 +7,35 @@ module SpreeCustomizedStorefront::Spree
 
           def search
             page = params[:page].present? ? params[:page].to_i : 1
-            per_page = params[:per_page].present? ? params[:per_page].to_i : 24
-            products_data = fetch_products(customized_collection)
-            meta = collect_meta_data(products_data, per_page)
-            p "ALLLLLLLLLLLLLAAAAAAAAAAAh"
-            p @total_pages
+            base_data = products_data
+            meta = collect_meta_data(base_data, per_page)
             links = customized_collection_links(page,@total_pages)
-            products_data[:meta] = meta
-            products_data[:links] = links
-            render :json => products_data, status: 200
+            base_data[:meta] = meta
+            base_data[:links] = links
+            render :json => base_data, status: 200
           end
 
           private
+          
 
+          def products_data
+            @products_data ||= fetch_products(customized_pagination(customized_collection))
+          end
+          
+          def customized_pagination(customized_collection)
+            page = params[:page].present? ? params[:page].to_i : 1
+            per_page = params[:per_page].present? ? params[:per_page].to_i : 24
+            @total_count = customized_collection.size
+            return customized_collection if customized_collection.size < 1
+            min = (page - 1) * per_page
+            max = min + (per_page - 1)
+            if customized_collection[min..max].nil?
+              return []
+            end
+            customized_collection[min..max]
+            
+          end
+          
           def customized_collection
             @customized_collection ||= customized_collection_finder.new(params: finder_params).execute
           end
@@ -39,6 +55,9 @@ module SpreeCustomizedStorefront::Spree
           end
 
           def integrate_data(data)
+            if data.size < 1
+              return {:data => [],:included => []}
+            end
             base = data.first
             data.each_with_index do |d, i|
               next if i == 0
@@ -49,10 +68,10 @@ module SpreeCustomizedStorefront::Spree
             base
           end
 
+
           def collect_meta_data(products_data, per_page)
               count = products_data[:data].size < per_page ? products_data[:data].size : per_page 
-              total_count = products_data[:data].size
-              @total_pages = (total_count / per_page).to_i
+              @total_pages = (@total_count / per_page).to_i
               option_types = customized_collect_option_types(products_data)
               {
                 :count => count,
@@ -66,19 +85,28 @@ module SpreeCustomizedStorefront::Spree
           end          
 
           def customized_collect_option_types(products_data)
-            option_type_ids = products_data[:included].select{ |item| item[:type] == :option_type}.map do |item|
-              item[:id]
+            return [] if products_data[:data].size < 1
+            opvls = []
+            optps = []
+            products_data[:included].each do |item|
+              if item[:type] == :option_type
+                optps.push(item)
+              elsif item[:type] == :option_value
+                  opvls.push(item)
+              end
             end
-            Spree::OptionType.where(id: option_type_ids).map do |ot|
-              {
-                :id => ot.id,
-                :name => ot.name,              
-                :presentation => ot.presentation,
-                :option_values => ot.option_values.map do |item| 
-                  {id: item.id, name: item.name, presentation: item.presentation, position: item.position}
+            optps.map do |optp|
+               {
+                :id => optp[:id],
+                :name => optp[:attributes][:name],              
+                :presentation => optp[:attributes][:presentation],
+                :option_values => opvls.select do |item|
+                  item[:relationships][:option_type][:data][:id].to_i == optp[:id].to_i
+                end.map do |item| 
+                  {id: item[:id], name: item[:attributes][:name], presentation: item[:attributes][:presentation], position: item[:attributes][:position]}
                 end
               }
-            end
+            end             
           end
 
           def customized_collection_finder

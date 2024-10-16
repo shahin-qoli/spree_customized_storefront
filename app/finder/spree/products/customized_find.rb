@@ -82,6 +82,7 @@ module Spree
 
       def by_taxons(product_ids)
           return product_ids unless taxons?
+          return product_ids if taxons[0].to_i == "10673".to_i
           Spree::Product.search(where: { taxon_ids: taxons, product_id: product_ids }).pluck(:id)  
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
       end
