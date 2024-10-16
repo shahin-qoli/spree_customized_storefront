@@ -119,7 +119,7 @@ module SpreeCustomizedStorefront::Spree
           end
 
           def customized_collection_links(current_page)
-            next_page = current_page < @total_pages ? current_page + 1 : t@otal_pages
+            next_page = current_page < @total_pages ? current_page + 1 : @total_pages
             prev_page = current_page > 1 ? current_page - 1 : current_page
             {
               self: request.original_url,
