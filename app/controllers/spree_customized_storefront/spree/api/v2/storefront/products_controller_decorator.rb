@@ -10,7 +10,7 @@ module SpreeCustomizedStorefront::Spree
             per_page = params[:per_page].present? ? params[:per_page].to_i : 24
             base_data = products_data
             meta = collect_meta_data(base_data, per_page)
-            links = customized_collection_links(page,@total_pages)
+            links = customized_collection_links(page)
             base_data[:meta] = meta
             base_data[:links] = links
             render :json => base_data, status: 200
@@ -76,7 +76,7 @@ module SpreeCustomizedStorefront::Spree
               option_types = customized_collect_option_types(products_data)
               {
                 :count => count,
-                :total_count => total_count,
+                :total_count => @total_count,
                 :total_pages => @total_pages,
                 :filters => {
                   :option_types => option_types,
@@ -118,14 +118,14 @@ module SpreeCustomizedStorefront::Spree
             Spree::CustomizedCaching::Product::Cache
           end
 
-          def customized_collection_links(current_page,total_pages)
-            next_page = current_page < total_pages ? current_page + 1 : total_pages
+          def customized_collection_links(current_page)
+            next_page = current_page < @total_pages ? current_page + 1 : t@otal_pages
             prev_page = current_page > 1 ? current_page - 1 : current_page
             {
               self: request.original_url,
               next: pagination_url(next_page),
               prev: pagination_url(prev_page),
-              last: pagination_url(total_pages),
+              last: pagination_url(@total_pages),
               first: pagination_url(1)
             }
           end
