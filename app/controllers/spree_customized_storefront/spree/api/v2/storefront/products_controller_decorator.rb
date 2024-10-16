@@ -7,6 +7,7 @@ module SpreeCustomizedStorefront::Spree
 
           def search
             page = params[:page].present? ? params[:page].to_i : 1
+            per_page = params[:per_page].present? ? params[:per_page].to_i : 24
             base_data = products_data
             meta = collect_meta_data(base_data, per_page)
             links = customized_collection_links(page,@total_pages)
