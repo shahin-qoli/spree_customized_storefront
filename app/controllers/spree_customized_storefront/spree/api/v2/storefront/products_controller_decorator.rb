@@ -86,29 +86,44 @@ module SpreeCustomizedStorefront::Spree
           end          
 
           def customized_collect_option_types(products_data)
-            return [] if products_data[:data].size < 1
-            opvls = []
-            optps = []
+            return [] if products_data[:data].empty?
+
+            option_values_hash = {}
+            option_types_hash = {}
+
+            # Step 1: Separate option_types and option_values into hashes for quick access
             products_data[:included].each do |item|
-              if item[:type] == :option_type
-                optps.push(item)
-              elsif item[:type] == :option_value
-                  opvls.push(item)
+              case item[:type]
+              when :option_type
+                option_types_hash[item[:id]] ||= {
+                  id: item[:id],
+                  name: item[:attributes][:name],
+                  presentation: item[:attributes][:presentation],
+                  option_values: []
+                }
+              when :option_value
+                option_values_hash[item[:id]] = {
+                  id: item[:id],
+                  name: item[:attributes][:name],
+                  presentation: item[:attributes][:presentation],
+                  position: item[:attributes][:position],
+                  option_type_id: item[:relationships][:option_type][:data][:id].to_i
+                }
               end
             end
-            optps.map do |optp|
-               {
-                :id => optp[:id],
-                :name => optp[:attributes][:name],              
-                :presentation => optp[:attributes][:presentation],
-                :option_values => opvls.select do |item|
-                  item[:relationships][:option_type][:data][:id].to_i == optp[:id].to_i
-                end.map do |item| 
-                  {id: item[:id], name: item[:attributes][:name], presentation: item[:attributes][:presentation], position: item[:attributes][:position]}
-                end
-              }
-            end             
+
+            # Step 2: Assign each option_value to its corresponding option_type
+            option_values_hash.each_value do |option_value|
+              option_type_id = option_value[:option_type_id]
+              if option_types_hash[option_type_id]
+                option_types_hash[option_type_id][:option_values] << option_value
+              end
+            end
+
+            # Step 3: Convert the hash of option_types to an array of structured results
+            option_types_hash.values
           end
+
 
           def customized_collection_finder
             Spree::Products::CustomizedFind
