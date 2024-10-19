@@ -64,7 +64,7 @@ module SpreeCustomizedStorefront::Spree
 
                   # Avoid duplicates by using a hash keyed by 'id'
                   merged_included.each do |item|
-                    unique_included[item['id']] ||= item
+                    unique_included["#{item[:id]}#{item[:type]}"] ||= item
                   end
 
                   # Return the unique included items
