@@ -24,23 +24,15 @@ module SpreeCustomizedStorefront::Spree
             @products_data ||= fetch_products(customized_collection)
           end
           
-          # def customized_pagination(customized_collection)
-          #   page = params[:page].present? ? params[:page].to_i : 1
-          #   per_page = params[:per_page].present? ? params[:per_page].to_i : 24
-          #   @total_count = customized_collection.size
-          #   return customized_collection if customized_collection.size < 1
-          #   min = (page - 1) * per_page
-          #   max = min + (per_page - 1)
-          #   if customized_collection[min..max].nil?
-          #     return []
-          #   end
-          #   customized_collection[min..max]
-            
-          # end
-          
+          def total_count
+
+          end
+
           def customized_collection
             @customized_collection ||= customized_collection_finder.new(params: finder_params).
             execute(@sort_by,@page,@per_page)
+            @total_count = @customized_collection.size
+            @customized_collection
           end
 
           def fetch_products(product_ids)
