@@ -24,14 +24,12 @@ module SpreeCustomizedStorefront::Spree
             @products_data ||= fetch_products(customized_collection)
           end
           
-          def total_count
-
-          end
 
           def customized_collection
-            @customized_collection ||= customized_collection_finder.new(params: finder_params).
+            customized_collection_data ||= customized_collection_finder.new(params: finder_params).
             execute(@sort_by,@page,@per_page)
-            @total_count = @customized_collection.size
+            @customized_collection = customized_collection_data[0]
+            @total_count = customized_collection_data[1]
             @customized_collection
           end
 

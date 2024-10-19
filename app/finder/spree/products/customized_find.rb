@@ -26,7 +26,7 @@ module Spree
         product_ids = by_taxons(product_ids)
         product_ids = order_paginate(product_ids,sort_by,page,per_page)
 
-        product_ids
+        [product_ids,@total_count]
       end
 
       private
@@ -81,7 +81,7 @@ module Spree
 
         # Calculate the offset for pagination
         offset = (page - 1) * per_page
-
+        @total_count = product_ids.size
         # Perform the search with sorting and pagination
         Spree::Product.search(
           where: { product_id: product_ids },    # Filter by product_ids
