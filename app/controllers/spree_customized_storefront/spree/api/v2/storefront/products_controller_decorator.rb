@@ -58,7 +58,7 @@ module SpreeCustomizedStorefront::Spree
 
               # Merge data into base
               base = base.merge(d) do |key, old_value, new_value|
-                if key == 'included'
+                if key == :included
                   # Handle the merging of 'included' array
                   merged_included = old_value + new_value
 
