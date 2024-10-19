@@ -2,7 +2,10 @@ module Spree
   module Products
     class CustomizedFind
       def initialize(params:, current_currency: nil)
-        @scope = Spree::Taxon.find(10673).products.pluck(:id)
+        @scope = Spree::Product.search(
+          '*', 
+          where: { taxon_ids: [10673] }
+        ).pluck(:id)
 
         ActiveSupport::Deprecation.warn('`current_currency` param is deprecated and will be removed in Spree 5') if current_currency
 
@@ -36,9 +39,10 @@ module Spree
         # @purchasable      = params.dig(:filter, :purchasable)
       end
 
-      def execute
+      def execute(sort_by,page,per_page)
         product_ids = by_customized(scope)
         product_ids = by_taxons(product_ids)
+        product_ids = ordered(product_ids)
         # products = show_only_stock(products)
         
         # products = by_ids(scope)
@@ -77,13 +81,20 @@ module Spree
       
       def by_customized(products)
           return products unless customized?
-          Spree::Product.search(customized, match: :word).pluck(:id)  
+          Spree::Product.search(customized, 
+                      match: :word, 
+                      where: { product_ids: products }
+          ).pluck(:id)
+          # Spree::Product.search(customized, match: :word).pluck(:id)  
       end
 
       def by_taxons(product_ids)
           return product_ids unless taxons?
           return product_ids if taxons[0].to_i == "10673".to_i
-          Spree::Product.search(where: { taxon_ids: taxons, product_id: product_ids }).pluck(:id)  
+          Spree::Product.search("*", 
+                      match: :word, 
+                      where: { product_ids: product_ids, taxon_ids: taxons }
+          ).pluck(:id)
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
       end
       def taxon_ids(taxons_ids)
@@ -91,6 +102,31 @@ module Spree
 
         taxons_ids.to_s.split(',')
       end
+
+      def order_paginate(product_ids, sort_by = nil, page = 1, per_page = 24)
+        sort_option = case sort_by
+                      when 'price-high-low'
+                        { price: :desc }
+                      when 'price-low-high'
+                        { price: :asc }
+                      when 'create-date'
+                        { created_at: :desc }
+                      else
+                        { _score: :desc } # Default: sort by relevance score
+                      end
+
+        # Calculate the offset for pagination
+        offset = (page - 1) * per_page
+
+        # Perform the search with sorting and pagination
+        Spree::Product.search(
+          where: { id: product_ids },    # Filter by product_ids
+          order: sort_option,            # Apply sorting based on sort_by
+          limit: per_page,               # Number of products per page
+          offset: offset                 # Start from this position (for pagination)
+        )
+      end  
+
     end
   end
 end

@@ -6,11 +6,12 @@ module SpreeCustomizedStorefront::Spree
         module ProductsControllerDecorator
 
           def search
-            page = params[:page].present? ? params[:page].to_i : 1
-            per_page = params[:per_page].present? ? params[:per_page].to_i : 24
+            @page = params[:page].present? ? params[:page].to_i : 1
+            @per_page = params[:per_page].present? ? params[:per_page].to_i : 24
+            @sort_by = params[:sort_by]
             base_data = products_data
-            meta = collect_meta_data(base_data, per_page)
-            links = customized_collection_links(page)
+            meta = collect_meta_data(base_data, @per_page)
+            links = customized_collection_links(@page)
             base_data[:meta] = meta
             base_data[:links] = links
             render :json => base_data, status: 200
@@ -20,25 +21,26 @@ module SpreeCustomizedStorefront::Spree
           
 
           def products_data
-            @products_data ||= fetch_products(customized_pagination(customized_collection))
+            @products_data ||= fetch_products(customized_collection)
           end
           
-          def customized_pagination(customized_collection)
-            page = params[:page].present? ? params[:page].to_i : 1
-            per_page = params[:per_page].present? ? params[:per_page].to_i : 24
-            @total_count = customized_collection.size
-            return customized_collection if customized_collection.size < 1
-            min = (page - 1) * per_page
-            max = min + (per_page - 1)
-            if customized_collection[min..max].nil?
-              return []
-            end
-            customized_collection[min..max]
+          # def customized_pagination(customized_collection)
+          #   page = params[:page].present? ? params[:page].to_i : 1
+          #   per_page = params[:per_page].present? ? params[:per_page].to_i : 24
+          #   @total_count = customized_collection.size
+          #   return customized_collection if customized_collection.size < 1
+          #   min = (page - 1) * per_page
+          #   max = min + (per_page - 1)
+          #   if customized_collection[min..max].nil?
+          #     return []
+          #   end
+          #   customized_collection[min..max]
             
-          end
+          # end
           
           def customized_collection
-            @customized_collection ||= customized_collection_finder.new(params: finder_params).execute
+            @customized_collection ||= customized_collection_finder.new(params: finder_params).
+            execute(@sort_by,@page,@per_page)
           end
 
           def fetch_products(product_ids)
