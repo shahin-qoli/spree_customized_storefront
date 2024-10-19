@@ -47,7 +47,7 @@ module Spree
           return products unless customized?
           Spree::Product.search(customized, 
                       match: :word, 
-                      where: { product_ids: products }
+                      where: { product_id: products }
           ).pluck(:id)
           # Spree::Product.search(customized, match: :word).pluck(:id)  
       end
@@ -57,7 +57,7 @@ module Spree
           return product_ids if taxons[0].to_i == "10673".to_i
           Spree::Product.search("*", 
                       match: :word, 
-                      where: { product_ids: product_ids, taxon_ids: taxons }
+                      where: { product_id: product_ids, taxon_ids: taxons }
           ).pluck(:id)
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
       end
@@ -84,7 +84,7 @@ module Spree
 
         # Perform the search with sorting and pagination
         Spree::Product.search(
-          where: { id: product_ids },    # Filter by product_ids
+          where: { product_id: product_ids },    # Filter by product_ids
           order: sort_option,            # Apply sorting based on sort_by
           limit: per_page,               # Number of products per page
           offset: offset                 # Start from this position (for pagination)
