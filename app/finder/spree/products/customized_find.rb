@@ -70,13 +70,13 @@ module Spree
       def order_paginate(product_ids, sort_by = nil, page = 1, per_page = 24)
         sort_option = case sort_by
                       when 'price-high-low'
-                        { price: :desc }
+                        {in_stock: :desc, price: :desc }
                       when 'price-low-high'
-                        { price: :asc }
+                        { in_stock: :desc, price: :asc }
                       when 'create-date'
-                        { created_at: :desc }
+                        {in_stock: :desc, created_at: :desc }
                       else
-                        { _score: :desc } # Default: sort by relevance score
+                        {in_stock: :desc, _score: :desc } # Default: sort by relevance score
                       end
 
         # Calculate the offset for pagination
