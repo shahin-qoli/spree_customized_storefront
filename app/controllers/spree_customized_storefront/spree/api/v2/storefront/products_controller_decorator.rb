@@ -17,6 +17,7 @@ module SpreeCustomizedStorefront::Spree
             step5_time = Time.now
             p "*****STEP5 - Time taken: #{step5_time - step4_time} seconds*****"
             links = customized_collection_links(@page)
+            step6_time = Time.now
             p "*****STEP6 - Time taken: #{step6_time - step5_time} seconds*****"
             base_data[:meta] = meta
             base_data[:links] = links
