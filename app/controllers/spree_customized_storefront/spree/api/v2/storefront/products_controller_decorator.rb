@@ -48,37 +48,32 @@ module SpreeCustomizedStorefront::Spree
             integrate_data(data)
           end
 
-          def integrate_data(data)
-            return { data: [], included: [] } if data.size < 1
+def integrate_data(data)
+  return { data: [], included: [] } if data.empty?
 
-            base = data.first
-            unique_included = {}
+  base = data.first
+  unique_included = {}
 
-            data.each_with_index do |d, i|
-              next if i == 0
+  # Start by merging 'data' without considering 'included'
+  data[1..].each do |d|
+    base[:data] += d[:data]
+  end
 
-              # Merge data into base
-              base = base.merge(d) do |key, old_value, new_value|
-                if key == :included
-                  # Handle the merging of 'included' array
-                  merged_included = old_value + new_value
+  # Handle 'included' separately and avoid duplicates
+  data.each do |d|
+    d[:included].each do |item|
+      # Use a tuple (id, type) for uniqueness check
+      unique_key = [item[:id], item[:type]]
+      unique_included[unique_key] ||= item
+    end
+  end
 
-                  # Avoid duplicates by using a hash keyed by 'id'
-                  merged_included.each do |item|
-                    p "#{item[:id]}#{item[:type]}"
-                    unique_included["#{item[:id]}#{item[:type]}"] ||= item
-                  end
+  # Assign the unique 'included' items back to the base
+  base[:included] = unique_included.values
 
-                  # Return the unique included items
-                  unique_included.values
-                else
-                  old_value + new_value
-                end
-              end
-            end
+  base
+end
 
-            base
-          end
 
 
 
