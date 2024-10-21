@@ -6,18 +6,23 @@ module SpreeCustomizedStorefront::Spree
         module ProductsControllerDecorator
 
           def search
+            start_time = Time.now
             @page = params[:page].present? ? params[:page].to_i : 1
             @per_page = params[:per_page].present? ? params[:per_page].to_i : 24
             @sort_by = params[:sort_by]
             base_data = products_data
-            p "*****STEP4*******"
+            step4_time = Time.now
+            p "*****STEP4 - Time taken: #{step4_time - start_time} seconds*****"
             meta = collect_meta_data(base_data, @per_page)
-            p "*****STEP5*******"
+            step5_time = Time.now
+            p "*****STEP5 - Time taken: #{step5_time - step4_time} seconds*****"
             links = customized_collection_links(@page)
-            p "*****STEP6*******"
+            p "*****STEP6 - Time taken: #{step6_time - step5_time} seconds*****"
             base_data[:meta] = meta
             base_data[:links] = links
             render :json => base_data, status: 200
+            total_time = Time.now
+            p "*****Total Time taken for search: #{total_time - start_time} seconds*****"
           end
 
           
@@ -37,24 +42,27 @@ end
 
 
 def fetch_products(product_ids)
+  start_time = Time.now
   p "*********START*******"
   keys = product_ids.map { |id| "spree_customized_product_#{id}_cache" }
   products = Rails.cache.read_multi(*keys)
-  p "*****STEP1*******"
+            step1_time = Time.now
+            p "*****STEP1 - Time taken: #{step1_time - start_time} seconds*****"
   missing_ids = product_ids.reject { |id| products["spree_customized_product_#{id}_cache"] }
   unless missing_ids.empty?
     cache_products_service.new(missing_ids).execute
     new_products = Rails.cache.read_multi(*missing_ids.map { |id| "spree_customized_product_#{id}_cache" })
     products.merge!(new_products)
   end
-  
+              step2_time = Time.now
+            p "*****STEP2 - Time taken: #{step2_time - step1_time} seconds*****"
   integrate_data(products.values.compact)
 end
 
 
 def integrate_data(data)
   return { data: [], included: [] } if data.empty?
-  p "*****STEP2*******"
+  step2_start = Time.now
   merged_data = { data: [], included: [] }
   unique_included = {}
 
@@ -66,7 +74,8 @@ def integrate_data(data)
       unique_included[unique_key] ||= item
     end
   end
-  p "*****STEP3*******"
+            step3_time = Time.now
+            p "*****STEP3 - Time taken: #{step3_time - step2_start} seconds*****"
   merged_data[:included] = unique_included.values
   merged_data
 end
