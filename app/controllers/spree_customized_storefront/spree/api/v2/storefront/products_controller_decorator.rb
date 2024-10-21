@@ -17,7 +17,7 @@ module SpreeCustomizedStorefront::Spree
             render :json => base_data, status: 200
           end
 
-          
+          private
           
 
           def products_data
@@ -28,7 +28,6 @@ module SpreeCustomizedStorefront::Spree
           def customized_collection
             customized_collection_data ||= customized_collection_finder.new(params: finder_params).
             execute(@sort_by,@page,@per_page)
-            p "afteeeeeeeeeeeeer FFFFFFFFFFFFFFFFFFFFFFFFFFFIND"
             @customized_collection = customized_collection_data[0]
             @total_count = customized_collection_data[1]
             @customized_collection
