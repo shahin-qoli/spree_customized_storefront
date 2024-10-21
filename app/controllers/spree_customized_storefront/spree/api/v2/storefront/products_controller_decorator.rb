@@ -97,34 +97,44 @@ module SpreeCustomizedStorefront::Spree
               }
           end          
 
-          def customized_collect_option_types(products_data)
-            return [] if products_data[:data].size < 1
-            opvls = []
-            optps = []
-            products_data[:included].each do |item|
-              if item[:type] == :option_type
-                if optps.select{|op| op[:id] == item[:id] }.empty?
-                  optps.push(item)
-                end
-              elsif item[:type] == :option_value
-                if opvls.select{|op| op[:id] == item[:id] }.empty?
-                  opvls.push(item)
-                end
-              end
-            end
-            optps.map do |optp|
-               {
-                :id => optp[:id],
-                :name => optp[:attributes][:name],              
-                :presentation => optp[:attributes][:presentation],
-                :option_values => opvls.select do |item|
-                  item[:relationships][:option_type][:data][:id].to_i == optp[:id].to_i
-                end.map do |item| 
-                  {id: item[:id], name: item[:attributes][:name], presentation: item[:attributes][:presentation], position: item[:attributes][:position]}
-                end
-              }
-            end             
-          end
+def customized_collect_option_types(products_data)
+  return [] if products_data[:data].empty?
+
+  option_types = {}
+  option_values_by_type = Hash.new { |h, k| h[k] = [] }
+
+  # Collect option types and group option values by option_type
+  products_data[:included].each do |item|
+    case item[:type]
+    when :option_type
+      # Use a hash to avoid duplicates
+      option_types[item[:id]] ||= {
+        id: item[:id],
+        name: item[:attributes][:name],
+        presentation: item[:attributes][:presentation],
+        option_values: []
+      }
+    when :option_value
+      option_type_id = item[:relationships][:option_type][:data][:id].to_i
+      # Group option values by option_type_id
+      option_values_by_type[option_type_id] << {
+        id: item[:id],
+        name: item[:attributes][:name],
+        presentation: item[:attributes][:presentation],
+        position: item[:attributes][:position]
+      }
+    end
+  end
+
+  # Assign grouped option values to their respective option types
+  option_types.each do |id, option_type|
+    option_type[:option_values] = option_values_by_type[id]
+  end
+
+  # Return the option types as an array
+  option_types.values
+end
+
 
           def customized_collection_finder
             Spree::Products::CustomizedFind
