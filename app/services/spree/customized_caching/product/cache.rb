@@ -2,7 +2,7 @@ module Spree::CustomizedCaching::Product
 	class Cache
 
 		def initialize(ids=nil)
-			if ids.nil?
+			if ids.nil? || !ids.is_a?(Array)
 				@ids = fetch_product_ids_to_cache
 			else
 				@ids = ids
@@ -28,8 +28,14 @@ module Spree::CustomizedCaching::Product
 		end
 
 		def fetch_product_ids_to_cache
-			Spree::Taxon.find(miarze_shop_taxon_id).products.pluck(&:id)
+		  @ids ||= Rails.cache.fetch(scope_cache_key, expires_in: 24.hours) do
+        Spree::Taxonomy.first.taxons.map{|item| item.products.map{|item| item.id}}.flatten!.uniq!
+      end
 		end
+
+    def scope_cache_key
+      "miarze_product_ids"
+    end
 
 		def spree_product_serializer
 			Spree::V2::Storefront::ProductSerializer

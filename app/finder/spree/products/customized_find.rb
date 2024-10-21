@@ -2,10 +2,6 @@ module Spree
   module Products
     class CustomizedFind
       def initialize(params:, current_currency: nil)
-        @scope = Spree::Product.search(
-          '*', 
-          where: { taxon_ids: [10673] }
-        ).pluck(:id)
 
         ActiveSupport::Deprecation.warn('`current_currency` param is deprecated and will be removed in Spree 5') if current_currency
 
@@ -37,9 +33,13 @@ module Spree
           customized.present?
       end
 
+      def scope
+        @scope ||= Rails.cache.fetch(scope_cache_key, expires_in: 24.hours) do
+          Spree::Taxonomy.first.taxons.map{|item| item.products.map{|item| item.id}}.flatten!.uniq!
+        end
+      end
+      
       def taxons?
-        p "haaaaaaaaaaadasasssssss"
-        p taxons
         taxons.present?
       end
       
@@ -91,6 +91,9 @@ module Spree
         )
       end  
 
+      def scope_cache_key
+        "miarze_product_ids"
+      end
     end
   end
 end
