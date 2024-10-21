@@ -28,8 +28,7 @@ module SpreeCustomizedStorefront::Spree
 def customized_collection
   return @customized_collection if @customized_collection
 
-  @customized_collection, @total_count = customized_collection_finder.new(params: finder_params)
-                                                                      .execute(@sort_by, @page, @per_page)
+  @customized_collection, @total_count = customized_collection_finder.new(params: finder_params).execute(@sort_by, @page, @per_page)
   @customized_collection
 end
 
@@ -68,12 +67,6 @@ def integrate_data(data)
   merged_data
 end
 
-
-  # Assign the unique 'included' items back to the base
-  base[:included] = unique_included.values
-
-  base
-end
 
 
 
