@@ -25,48 +25,49 @@ module SpreeCustomizedStorefront::Spree
           end
           
 
-          def customized_collection
-            customized_collection_data ||= customized_collection_finder.new(params: finder_params).
-            execute(@sort_by,@page,@per_page)
-            p "afteeeeeeeeeeeeer FFFFFFFFFFFFFFFFFFFFFFFFFFFIND"
-            @customized_collection = customized_collection_data[0]
-            @total_count = customized_collection_data[1]
-            @customized_collection
-          end
+def customized_collection
+  return @customized_collection if @customized_collection
 
-          def fetch_products(product_ids)
-            data = []
-            product_ids.each do |id|
-              key = "spree_customized_product_#{id}_cache"
-              product = Rails.cache.read(key)
-              if product.nil?
-                cache_products_service.new([id]).execute
-                product = Rails.cache.read(key)
-              end
-              data.push(product)
-            end
-            integrate_data(data)
-          end
+  @customized_collection, @total_count = customized_collection_finder.new(params: finder_params)
+                                                                      .execute(@sort_by, @page, @per_page)
+  @customized_collection
+end
+
+
+def fetch_products(product_ids)
+  keys = product_ids.map { |id| "spree_customized_product_#{id}_cache" }
+  products = Rails.cache.read_multi(*keys)
+
+  missing_ids = product_ids.reject { |id| products["spree_customized_product_#{id}_cache"] }
+  unless missing_ids.empty?
+    cache_products_service.new(missing_ids).execute
+    new_products = Rails.cache.read_multi(*missing_ids.map { |id| "spree_customized_product_#{id}_cache" })
+    products.merge!(new_products)
+  end
+
+  integrate_data(products.values.compact)
+end
+
 
 def integrate_data(data)
   return { data: [], included: [] } if data.empty?
 
-  base = data.first
+  merged_data = { data: [], included: [] }
   unique_included = {}
 
-  # Start by merging 'data' without considering 'included'
-  data[1..].each do |d|
-    base[:data] += d[:data]
-  end
-
-  # Handle 'included' separately and avoid duplicates
   data.each do |d|
+    merged_data[:data].concat(d[:data])
+
     d[:included].each do |item|
-      # Use a tuple (id, type) for uniqueness check
       unique_key = [item[:id], item[:type]]
       unique_included[unique_key] ||= item
     end
   end
+
+  merged_data[:included] = unique_included.values
+  merged_data
+end
+
 
   # Assign the unique 'included' items back to the base
   base[:included] = unique_included.values
