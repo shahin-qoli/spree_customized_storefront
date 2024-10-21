@@ -10,8 +10,11 @@ module SpreeCustomizedStorefront::Spree
             @per_page = params[:per_page].present? ? params[:per_page].to_i : 24
             @sort_by = params[:sort_by]
             base_data = products_data
+            p "*****STEP4*******"
             meta = collect_meta_data(base_data, @per_page)
+            p "*****STEP5*******"
             links = customized_collection_links(@page)
+            p "*****STEP6*******"
             base_data[:meta] = meta
             base_data[:links] = links
             render :json => base_data, status: 200
@@ -34,23 +37,24 @@ end
 
 
 def fetch_products(product_ids)
+  p "*********START*******"
   keys = product_ids.map { |id| "spree_customized_product_#{id}_cache" }
   products = Rails.cache.read_multi(*keys)
-
+  p "*****STEP1*******"
   missing_ids = product_ids.reject { |id| products["spree_customized_product_#{id}_cache"] }
   unless missing_ids.empty?
     cache_products_service.new(missing_ids).execute
     new_products = Rails.cache.read_multi(*missing_ids.map { |id| "spree_customized_product_#{id}_cache" })
     products.merge!(new_products)
   end
-
+  
   integrate_data(products.values.compact)
 end
 
 
 def integrate_data(data)
   return { data: [], included: [] } if data.empty?
-
+  p "*****STEP2*******"
   merged_data = { data: [], included: [] }
   unique_included = {}
 
@@ -62,7 +66,7 @@ def integrate_data(data)
       unique_included[unique_key] ||= item
     end
   end
-
+  p "*****STEP3*******"
   merged_data[:included] = unique_included.values
   merged_data
 end
