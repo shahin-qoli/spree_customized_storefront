@@ -23,7 +23,11 @@ module Spree
         p "IN THE SEAAAAAAAAARCH"
         p scope
         product_ids = by_customized(scope)
+        p "11111111111111111"
+        p product_ids
         product_ids = by_taxons(product_ids)
+        p "2222222222222222222222"
+        p product_ids
         product_ids = order_paginate(product_ids,sort_by,page,per_page)
         p "AFTERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
         p product_ids
@@ -93,7 +97,7 @@ module Spree
           # Apply sorting based on sort_by
           limit: per_page,               # Number of products per page
           offset: offset                 # Start from this position (for pagination)
-        )
+        ).map(&:id)
       end  
 
       def scope_cache_key
