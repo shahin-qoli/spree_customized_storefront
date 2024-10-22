@@ -78,18 +78,18 @@ module Spree
         offset = (page - 1) * per_page
         @total_count = product_ids.size
         # Perform the search with sorting and pagination
-        Spree::Product.search(
-          where: { product_id: product_ids },    # Filter by product_ids
-          order: sort_option,            # Apply sorting based on sort_by
-          limit: per_page,               # Number of products per page
-          offset: offset                 # Start from this position (for pagination)
-        )
         # Spree::Product.search(
         #   where: { product_id: product_ids },    # Filter by product_ids
-        #   # Apply sorting based on sort_by
+        #   order: sort_option,            # Apply sorting based on sort_by
         #   limit: per_page,               # Number of products per page
         #   offset: offset                 # Start from this position (for pagination)
-        # ).map(&:id)
+        # )
+        Spree::Product.search(
+          where: { product_id: product_ids },    # Filter by product_ids
+          # Apply sorting based on sort_by
+          limit: per_page,               # Number of products per page
+          offset: offset                 # Start from this position (for pagination)
+        ).map(&:id)
       end  
 
       def scope_cache_key
