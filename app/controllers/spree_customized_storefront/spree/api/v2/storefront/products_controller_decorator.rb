@@ -46,6 +46,7 @@ def fetch_products(product_ids)
   start_time = Time.now
   p "*********START*******"
   keys = product_ids.map { |id| "spree_customized_product_#{id}_cache" }
+  p keys
   products = Rails.cache.read_multi(*keys)
             step1_time = Time.now
             p "*****STEP1 - Time taken: #{step1_time - start_time} seconds*****"
