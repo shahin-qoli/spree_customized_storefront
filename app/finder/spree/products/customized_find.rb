@@ -20,10 +20,13 @@ module Spree
       end
 
       def execute(sort_by,page,per_page)
+        p "IN THE SEAAAAAAAAARCH"
+        p scope
         product_ids = by_customized(scope)
         product_ids = by_taxons(product_ids)
         product_ids = order_paginate(product_ids,sort_by,page,per_page)
-
+        p "AFTERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
+        p product_ids
         [product_ids,@total_count]
       end
 
