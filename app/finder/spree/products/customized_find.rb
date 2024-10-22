@@ -47,7 +47,7 @@ module Spree
           Spree::Product.search(customized, 
                       match: :word, 
                       where: { product_id: products }
-          ).map(:id)
+          ).map(&:id)
           # Spree::Product.search(customized, match: :word).pluck(:id)  
       end
 
@@ -57,7 +57,7 @@ module Spree
           Spree::Product.search("*", 
                       match: :word, 
                       where: { product_id: product_ids, taxon_ids: taxons }
-          ).map(:id)
+          ).map(&:id)
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
       end
       def taxon_ids(taxons_ids)
