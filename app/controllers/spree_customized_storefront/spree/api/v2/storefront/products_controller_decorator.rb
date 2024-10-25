@@ -6,7 +6,7 @@ module SpreeCustomizedStorefront::Spree
         module ProductsControllerDecorator
 
           def index
-            if params.dig(:filter, :customized).nil?
+            if params.dig(:filter, :customized).nil? || params.dig(:filter, :customized).empty?
               p "gooooooooooooo tooooooooooooo ooooooooooooooooooorrrrrrrrrrrr"
               super
             else
