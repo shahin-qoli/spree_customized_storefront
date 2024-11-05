@@ -7,10 +7,8 @@ module SpreeCustomizedStorefront::Spree
 
           def index
             if params.dig(:filter, :customized).nil? || params.dig(:filter, :customized).empty?
-              p "gooooooooooooo tooooooooooooo ooooooooooooooooooorrrrrrrrrrrr"
               super
             else
-              p 'newwwwwwwwwwwwwwwwwwwwwwwwwwwwwwnewwwwwwwwwwwwwwwwwwwww'
               @page = params[:page].present? ? params[:page].to_i : 1
               @per_page = params[:per_page].present? ? params[:per_page].to_i : 24
               @sort_by = params[:sort_by]

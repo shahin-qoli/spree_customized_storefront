@@ -49,10 +49,12 @@ module Spree
 
       def by_taxons(product_ids)
           return product_ids unless taxons?
-          return product_ids if taxons[0].to_i == "10673".to_i
+          # return product_ids if taxons[0].to_i == "10673".to_i
           Spree::Product.search("*", 
                       match: :word, 
-                      where: { product_id: product_ids, taxon_ids: taxons }
+                      where: { product_id: product_ids, taxon_ids: taxons },
+                      fields: [:product_id],
+                      load: false
           ).map(&:id)
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
       end
@@ -87,6 +89,7 @@ module Spree
         Spree::Product.search(
           where: { product_id: product_ids },    # Filter by product_ids
           # Apply sorting based on sort_by
+          order: sort_option
           limit: per_page,               # Number of products per page
           offset: offset                 # Start from this position (for pagination)
         ).map(&:id)
