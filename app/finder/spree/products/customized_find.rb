@@ -62,7 +62,7 @@ module Spree
         return products unless price?
 
         Spree::Product.search("*", 
-                      where: { product_id: product_ids, price: { gte: price.min, lte: price.max }}
+                      where: { product_id: products, price: { gte: price.min, lte: price.max }}
           ).map(&:id)
       end
       def by_taxons(product_ids)
