@@ -22,6 +22,7 @@ module Spree
       def execute(sort_by,page,per_page)
         product_ids = by_customized(scope)
         product_ids = by_taxons(product_ids)
+        product_ids = show_only_stock(product_ids)
         product_ids = order_paginate(product_ids,sort_by,page,per_page)
         [product_ids,@total_count]
       end
@@ -46,12 +47,17 @@ module Spree
           ).map(&:id)
           # Spree::Product.search(customized, match: :word).pluck(:id)  
       end
+      def show_only_stock(products)
+        return products unless in_stock.to_s == 'true'
 
+        Spree::Product.search("*", 
+                      where: { product_id: product_ids, in_stock: in_stock }
+          ).map(&:id)
+      end
       def by_taxons(product_ids)
           return product_ids unless taxons?
           return product_ids if taxons[0].to_i == "10673".to_i
           Spree::Product.search("*", 
-                      match: :word, 
                       where: { product_id: product_ids, taxon_ids: taxons }
           ).map(&:id)
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
