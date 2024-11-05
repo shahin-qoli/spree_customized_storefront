@@ -113,6 +113,11 @@ module Spree
       def scope_cache_key
         "miarze_product_ids"
       end
+      def map_prices(prices)
+        prices.map do |price|
+          price == 'Infinity' ? Float::INFINITY : price.to_f
+        end
+      end
     end
   end
 end
