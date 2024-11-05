@@ -23,7 +23,7 @@ module Spree
       def execute(sort_by,page,per_page)
         product_ids = by_customized(scope)
         product_ids = by_taxons(product_ids)
-        products = by_price(products)
+        product_ids = by_price(product_ids)
         product_ids = show_only_stock(product_ids)
         product_ids = order_paginate(product_ids,sort_by,page,per_page)
         [product_ids,@total_count]
