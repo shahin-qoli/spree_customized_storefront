@@ -61,7 +61,7 @@ module Spree
                 }
               }
             }
-          ).map { |result| result["_source"]["product_id"] }
+          ).map(&:id)
 
           # Spree::Product.search(customized, 
           #             match: :word, 
@@ -90,7 +90,7 @@ module Spree
                 }
               }
             }
-          ).map { |result| result["_source"]["product_id"] }
+          ).map(&:id)
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
       end
       def taxon_ids(taxons_ids)
@@ -141,7 +141,7 @@ module Spree
             size: per_page,        # Number of products per page
             from: offset           # Start from this position (for pagination)
           }
-        ).map { |result| result["_source"]["product_id"] }
+        ).map(&:id)
       end  
 
       def scope_cache_key
