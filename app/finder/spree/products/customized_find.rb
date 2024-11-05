@@ -40,22 +40,57 @@ module Spree
       
       def by_customized(products)
           return products unless customized?
-          Spree::Product.search(customized, 
-                      match: :word, 
-                      where: { product_id: products }
-          ).map(&:id)
+          Spree::Product.search(
+            body: {
+              query: {
+                bool: {
+                  must: [
+                    {
+                      match: {
+                        name: {
+                          query: customized,
+                          operator: "and",   # Ensure all terms match
+                          fuzziness: "AUTO"  # Allow slight misspellings or variations
+                        }
+                      }
+                    }
+                  ],
+                  filter: [
+                    { terms: { product_id: products } }
+                  ]
+                }
+              }
+            }
+          ).map { |result| result["_source"]["product_id"] }
+
+          # Spree::Product.search(customized, 
+          #             match: :word, 
+          #             where: { product_id: products }
+          # ).map(&:id)
           # Spree::Product.search(customized, match: :word).pluck(:id)  
       end
 
       def by_taxons(product_ids)
           return product_ids unless taxons?
           # return product_ids if taxons[0].to_i == "10673".to_i
-          Spree::Product.search("*", 
-                      match: :word, 
-                      where: { product_id: product_ids, taxon_ids: taxons },
-                      fields: [:product_id],
-                      load: false
-          ).map(&:id)
+          # Spree::Product.search("*", 
+          #             match: :word, 
+          #             where: { product_id: product_ids, taxon_ids: taxons },
+          #             fields: [:product_id],
+          #             load: false
+          # ).map(&:id)
+          Spree::Product.search(
+            body: {
+              query: {
+                bool: {
+                  filter: [
+                    { terms: { product_id: products } },
+                    { terms: { taxon_ids: taxons } }
+                  ]
+                }
+              }
+            }
+          ).map { |result| result["_source"]["product_id"] }
           #products.joins(:classifications).where(Classification.table_name => { taxon_id: taxons })
       end
       def taxon_ids(taxons_ids)
@@ -67,13 +102,13 @@ module Spree
       def order_paginate(product_ids, sort_by = nil, page = 1, per_page = 24)
         sort_option = case sort_by
                       when 'price-high-low'
-                        {in_stock: :desc, price: :desc }
+                        [{ in_stock: { order: "desc" } }, { price: { order: "desc" } }]
                       when 'price-low-high'
-                        { in_stock: :desc, price: :asc }
+                        [{ in_stock: { order: "desc" } }, { price: { order: "asc" } }]
                       when 'create-date'
-                        {in_stock: :desc, created_at: :desc }
+                        [{ in_stock: { order: "desc" } }, { created_at: { order: "desc" } }]
                       else
-                        {in_stock: :desc, _score: :desc } # Default: sort by relevance score
+                        [{ in_stock: { order: "desc" } }, { _score: { order: "desc" } }]
                       end
 
         # Calculate the offset for pagination
@@ -86,13 +121,27 @@ module Spree
         #   limit: per_page,               # Number of products per page
         #   offset: offset                 # Start from this position (for pagination)
         # )
+        # Spree::Product.search(
+        #   where: { product_id: product_ids },    # Filter by product_ids
+        #   # Apply sorting based on sort_by
+        #   order: sort_option,
+        #   limit: per_page,               # Number of products per page
+        #   offset: offset                 # Start from this position (for pagination)
+        # ).map(&:id)
         Spree::Product.search(
-          where: { product_id: product_ids },    # Filter by product_ids
-          # Apply sorting based on sort_by
-          order: sort_option,
-          limit: per_page,               # Number of products per page
-          offset: offset                 # Start from this position (for pagination)
-        ).map(&:id)
+          body: {
+            query: {
+              bool: {
+                filter: [
+                  { terms: { product_id: product_ids } }  # Filter by product_ids
+                ]
+              }
+            },
+            sort: sort_option,   # Apply sorting
+            size: per_page,        # Number of products per page
+            from: offset           # Start from this position (for pagination)
+          }
+        ).map { |result| result["_source"]["product_id"] }
       end  
 
       def scope_cache_key
