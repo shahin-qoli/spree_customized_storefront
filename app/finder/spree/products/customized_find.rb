@@ -51,7 +51,7 @@ module Spree
         return products unless in_stock.to_s == 'true'
 
         Spree::Product.search("*", 
-                      where: { product_id: product_ids, in_stock: in_stock }
+                      where: { product_id: products, in_stock: in_stock }
           ).map(&:id)
       end
       def by_taxons(product_ids)
