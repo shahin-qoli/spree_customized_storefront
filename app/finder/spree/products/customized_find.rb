@@ -16,12 +16,14 @@ module Spree
         @customized             = params.dig(:filter, :customized)
         @store            = params[:store] || Spree::Store.default        
         @taxons           = taxon_ids(params.dig(:filter, :taxons))
+        @price            = map_prices(String(params.dig(:filter, :price)).split(','))
         @in_stock         = params.dig(:filter, :in_stock)
       end
 
       def execute(sort_by,page,per_page)
         product_ids = by_customized(scope)
         product_ids = by_taxons(product_ids)
+        products = by_price(products)
         product_ids = show_only_stock(product_ids)
         product_ids = order_paginate(product_ids,sort_by,page,per_page)
         [product_ids,@total_count]
@@ -38,7 +40,9 @@ module Spree
       def taxons?
         taxons.present?
       end
-      
+      def price?
+        price.present?
+      end     
       def by_customized(products)
           return products unless customized?
           Spree::Product.search(customized, 
@@ -52,6 +56,13 @@ module Spree
 
         Spree::Product.search("*", 
                       where: { product_id: products, in_stock: in_stock }
+          ).map(&:id)
+      end
+      def by_price(products)
+        return products unless price?
+
+        Spree::Product.search("*", 
+                      where: { product_id: product_ids, price: { gte: price.min, lte: price.max }}
           ).map(&:id)
       end
       def by_taxons(product_ids)
