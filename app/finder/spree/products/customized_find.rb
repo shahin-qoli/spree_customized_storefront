@@ -89,7 +89,7 @@ module Spree
         Spree::Product.search(
           where: { product_id: product_ids },    # Filter by product_ids
           # Apply sorting based on sort_by
-          order: sort_option
+          order: sort_option,
           limit: per_page,               # Number of products per page
           offset: offset                 # Start from this position (for pagination)
         ).map(&:id)
