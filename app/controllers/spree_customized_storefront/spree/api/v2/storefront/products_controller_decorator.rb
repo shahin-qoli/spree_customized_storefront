@@ -96,8 +96,8 @@ module SpreeCustomizedStorefront::Spree
               case item[:type]
               when :option_type
                 # Use a hash to avoid duplicates
-                option_types[item[:id]] ||= {
-                  id: item[:id],
+                option_types[item[:id].to_i] ||= {
+                  id: item[:id].to_i,
                   name: item[:attributes][:name],
                   presentation: item[:attributes][:presentation],
                   option_values: []
@@ -106,7 +106,7 @@ module SpreeCustomizedStorefront::Spree
                 option_type_id = item[:relationships][:option_type][:data][:id].to_i
                 # Group option values by option_type_id
                 option_values_by_type[option_type_id] << {
-                  id: item[:id],
+                  id: item[:id].to_i,
                   name: item[:attributes][:name],
                   presentation: item[:attributes][:presentation],
                   position: item[:attributes][:position]
@@ -116,7 +116,7 @@ module SpreeCustomizedStorefront::Spree
           
             # Assign grouped option values to their respective option types
             option_types.each do |id, option_type|
-              option_type[:option_values] = option_values_by_type[id]
+              option_type[:option_values] = option_values_by_type[id.to_i]
             end
           
             # Return the option types as an array
