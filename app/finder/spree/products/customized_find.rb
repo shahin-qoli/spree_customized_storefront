@@ -20,13 +20,13 @@ module Spree
         @in_stock         = params.dig(:filter, :in_stock)
       end
 
-      def execute(sort_by,page,per_page)
+      def execute(sort_by)
         product_ids = by_customized(scope)
         product_ids = by_taxons(product_ids)
         product_ids = by_price(product_ids)
         product_ids = show_only_stock(product_ids)
-        product_ids = order_paginate(product_ids,sort_by,page,per_page)
-        [product_ids,@total_count]
+        product_ids = order_paginate(product_ids,sort_by)
+        product_ids
       end
 
       private
@@ -79,7 +79,7 @@ module Spree
         taxons_ids.to_s.split(',')
       end
 
-      def order_paginate(product_ids, sort_by = nil, page = 1, per_page = 24)
+      def order_paginate(product_ids, sort_by = nil)
         sort_option = case sort_by
                       when 'price-high-low'
                         {in_stock: :desc, price: :desc }
@@ -92,8 +92,7 @@ module Spree
                       end
 
         # Calculate the offset for pagination
-        offset = (page - 1) * per_page
-        @total_count = product_ids.size
+        
         # Perform the search with sorting and pagination
         # Spree::Product.search(
         #   where: { product_id: product_ids },    # Filter by product_ids
@@ -103,10 +102,7 @@ module Spree
         # )
         Spree::Product.search(
           where: { product_id: product_ids },  
-          order: sort_option,  # Filter by product_ids
-          # Apply sorting based on sort_by
-          limit: per_page,               # Number of products per page
-          offset: offset                 # Start from this position (for pagination)
+          order: sort_option
         ).map(&:id)
       end  
 

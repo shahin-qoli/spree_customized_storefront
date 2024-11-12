@@ -25,18 +25,43 @@ module SpreeCustomizedStorefront::Spree
           
 
           def products_data
-            @products_data ||= fetch_products(customized_collection)
+            @products_data ||= fetch_products(customized_pagination(customized_collection))
           end
           
 
           def customized_collection
             return @customized_collection if @customized_collection
           
-            @customized_collection, @total_count = customized_collection_finder.new(params: finder_params).execute(@sort_by, @page, @per_page)
+            @customized_collection = customized_collection_finder.new(params: finder_params).execute(@sort_by)
+            @total_count = @customized_collection.size
             @customized_collection
           end
 
-
+          def get_brands
+            keys = product_ids.map { |id| "spree_brands_product_#{id}_cache" }
+            brands = Rails.cache.read_multi(*keys)
+            missing_ids = product_ids.reject { |id| brands["spree_brands_product_#{id}_cache"] }
+            unless missing_ids.empty?
+              cache_brands_service.new(missing_ids).execute
+              new_brands = Rails.cache.read_multi(*missing_ids.map { |id| "spree_brands_product_#{id}_cache" })
+              brands.merge!(new_brands)
+            end
+            brands.flatten!.uniq!
+          end
+          
+          def customized_pagination(customized_collection)
+            page = params[:page].present? ? params[:page].to_i : 1
+            per_page = params[:per_page].present? ? params[:per_page].to_i : 24
+            @total_count = customized_collection.size
+            return customized_collection if customized_collection.size < 1
+            min = (page - 1) * per_page
+            max = min + (per_page - 1)
+            if customized_collection[min..max].nil?
+              return []
+            end
+            customized_collection[min..max]
+            
+          end
           def fetch_products(product_ids)
             keys = product_ids.map { |id| "spree_customized_product_#{id}_cache" }
             products = Rails.cache.read_multi(*keys)
@@ -87,40 +112,13 @@ module SpreeCustomizedStorefront::Spree
 
           def customized_collect_option_types(products_data)
             return [] if products_data[:data].empty?
-          
-            option_types = {}
-            option_values_by_type = Hash.new { |h, k| h[k] = [] }
-          
-            # Collect option types and group option values by option_type
-            products_data[:included].each do |item|
-              case item[:type]
-              when :option_type
-                # Use a hash to avoid duplicates
-                option_types[item[:id].to_i] ||= {
-                  id: item[:id].to_i,
-                  name: item[:attributes][:name],
-                  presentation: item[:attributes][:presentation],
-                  option_values: []
-                }
-              when :option_value
-                option_type_id = item[:relationships][:option_type][:data][:id].to_i
-                # Group option values by option_type_id
-                option_values_by_type[option_type_id] << {
-                  id: item[:id].to_i,
-                  name: item[:attributes][:name],
-                  presentation: item[:attributes][:presentation],
-                  position: item[:attributes][:position]
-                }
-              end
-            end
-          
-            # Assign grouped option values to their respective option types
-            option_types.each do |id, option_type|
-              option_type[:option_values] = option_values_by_type[id.to_i]
-            end
-          
-            # Return the option types as an array
-            option_types.values
+            brands = get_brands
+            [{
+              "id": 1,
+              "name": "brand",
+              "presentation": "برند",
+              "option_values": get_brands
+            }] 
           end
 
 
@@ -131,7 +129,11 @@ module SpreeCustomizedStorefront::Spree
           def cache_products_service
             Spree::CustomizedCaching::Product::Cache
           end
-
+          
+          def cache_brands_service
+            Spree::CustomizedCaching::Brand::Cache
+          end
+          
           def customized_collection_links(current_page)
             next_page = current_page < @total_pages ? current_page + 1 : @total_pages
             prev_page = current_page > 1 ? current_page - 1 : current_page
