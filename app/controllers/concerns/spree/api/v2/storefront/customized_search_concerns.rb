@@ -27,7 +27,7 @@ module Spree
               new_brands = Rails.cache.read_multi(*missing_ids.map { |id| "spree_brands_product_#{id}_cache" })
               brands.merge!(new_brands)
             end
-            brands.flatten!.uniq!
+            brands.flatten.uniq
           end
           
           def customized_pagination(customized_collection)
