@@ -19,7 +19,7 @@ module Spree
           end
 
           def get_brands
-            keys = product_ids.map { |id| "spree_brands_product_#{id}_cache" }
+            keys = customized_collection.map { |id| "spree_brands_product_#{id}_cache" }
             brands = Rails.cache.read_multi(*keys)
             missing_ids = product_ids.reject { |id| brands["spree_brands_product_#{id}_cache"] }
             unless missing_ids.empty?
@@ -76,10 +76,10 @@ module Spree
             merged_data
           end
 
-          def collect_meta_data(products_data, per_page)
+          def collect_meta_data(per_page)
               count = products_data[:data].size < per_page ? products_data[:data].size : per_page 
               @total_pages = (@total_count / per_page).to_i > 0 ? (@total_count / per_page).to_i : 1
-              option_types = customized_collect_option_types(products_data)
+              option_types = customized_collect_option_types
               {
                 :count => count,
                 :total_count => @total_count,
@@ -91,14 +91,14 @@ module Spree
               }
           end          
 
-          def customized_collect_option_types(products_data)
-            return [] if products_data[:data].empty?
+          def customized_collect_option_types
+            return [] if customized_collection.empty?
             brands = get_brands
             [{
               "id": 1,
               "name": "brand",
               "presentation": "برند",
-              "option_values": get_brands
+              "option_values": brands
             }] 
           end
 
