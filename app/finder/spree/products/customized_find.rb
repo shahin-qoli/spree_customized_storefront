@@ -50,7 +50,8 @@ module Spree
       def by_option_value_ids(product_ids)
          return product_ids unless option_value_ids?
           Spree::Product.search("*", 
-                      where: { product_id: product_ids, options_value_ids: option_value_ids }
+                      where: { product_id: product_ids, options_value_ids: option_value_ids },
+                      operator: "or"
           ).map(&:id)         
       end   
       def by_customized(products)
