@@ -21,7 +21,7 @@ module Spree
           def get_brands
             keys = customized_collection.map { |id| "spree_brands_product_#{id}_cache" }
             brands = Rails.cache.read_multi(*keys)
-            missing_ids = product_ids.reject { |id| brands["spree_brands_product_#{id}_cache"] }
+            missing_ids = customized_collection.reject { |id| brands["spree_brands_product_#{id}_cache"] }
             unless missing_ids.empty?
               cache_brands_service.new(missing_ids).execute
               new_brands = Rails.cache.read_multi(*missing_ids.map { |id| "spree_brands_product_#{id}_cache" })
