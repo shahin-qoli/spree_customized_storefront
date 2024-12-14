@@ -18,7 +18,7 @@ module Spree
         @taxons           = taxon_ids(params.dig(:filter, :taxons))
         @price            = map_prices(String(params.dig(:filter, :price)).split(','))
         @in_stock         = params.dig(:filter, :in_stock)
-        @option_value_ids = params.dig(:filter, :option_value_ids)
+        @option_value_ids = params.dig(:filter, :option_value_ids).split(',').map(&:to_i)
       end
 
       def execute(sort_by)
@@ -50,8 +50,7 @@ module Spree
       def by_option_value_ids(product_ids)
          return product_ids unless option_value_ids?
           Spree::Product.search("*", 
-                      where: { product_id: product_ids, options_value_ids: option_value_ids },
-                      operator: "or"
+                      where: { product_id: product_ids, options_value_ids: option_value_ids }
           ).map(&:id)         
       end   
       def by_customized(products)
