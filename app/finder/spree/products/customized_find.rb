@@ -18,7 +18,7 @@ module Spree
         @taxons           = taxon_ids(params.dig(:filter, :taxons))
         @price            = map_prices(String(params.dig(:filter, :price)).split(','))
         @in_stock         = params.dig(:filter, :in_stock)
-        @option_value_ids = params.dig(:filter, :option_value_ids).split(',').map(&:to_i)
+        @option_value_ids = prepare_option_value_ids(params.dig(:filter, :option_value_ids))
       end
 
       def execute(sort_by)
@@ -88,7 +88,10 @@ module Spree
 
         taxons_ids.to_s.split(',')
       end
-
+      def prepare_option_value_ids(option_values_ids)
+          return if option_values_ids.nil? || option_values_ids.to_s.blank?
+        option_values_ids.to_s.split(',').map(&:to_i)
+      end
       def order_paginate(product_ids, sort_by = nil)
         sort_option = case sort_by
                       when 'price-high-low'
