@@ -1,5 +1,5 @@
 module SpreeCustomizedStorefront::Spree::OrderDecorator
-	def self.prepend(base)
+	def self.prepended(base)
 		base.scope :without_payment, -> {payments.empty?}
 	end
 end
