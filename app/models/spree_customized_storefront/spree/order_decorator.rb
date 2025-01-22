@@ -1,6 +1,6 @@
 module SpreeCustomizedStorefront::Spree::OrderDecorator
 	def self.prepended(base)
-		base.scope :without_payment, -> {payments.empty?}
+		base.scope :without_payment, -> {left_joins(:payments).where(spree_payments: {id:nil}) }
 	end
 end
 
