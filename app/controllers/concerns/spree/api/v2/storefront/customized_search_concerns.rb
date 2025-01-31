@@ -80,16 +80,42 @@ module Spree
               count = products_data[:data].size < per_page ? products_data[:data].size : per_page 
               @total_pages = (@total_count / per_page).to_i > 0 ? (@total_count / per_page).to_i : 1
               option_types = customized_collect_option_types
+              taxons = customized_collect_taxons
               {
                 :count => count,
                 :total_count => @total_count,
                 :total_pages => @total_pages,
                 :filters => {
                   :option_types => option_types,
+                  :taxons => taxons,
                   :product_properties => []
                 }
               }
-          end          
+          end   
+
+          def customized_collect_taxons
+            keep_unique_paths(Spree::Product.where(id: customized_collection).
+            map{|item| item.taxons.reject{|tx| tx.hide_from_nav}}.flatten.uniq.
+            map(&:permalink).reject{|item| item.include?("brndh")}.map{|item| item.split("/")}).map{|item| item.join("/")}
+          end
+
+          def keep_unique_paths(paths)
+            # Build a trie to track all paths and their subpaths
+            trie = Hash.new { |h, k| h[k] = Hash.new(&h.default_proc) }
+
+            # Insert all paths into the trie
+            paths.each do |path|
+              node = trie
+              path.each { |segment| node = node[segment] }
+            end
+
+            # Collect paths that end at leaf nodes (no further subpaths)
+            paths.select do |path|
+              node = trie
+              # Traverse the trie to the end of the current path
+              path.all? { |segment| node = node[segment] } && node.empty?
+            end
+          end
 
           def customized_collect_option_types
             return [] if customized_collection.empty?
