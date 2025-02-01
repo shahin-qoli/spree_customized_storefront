@@ -17,7 +17,7 @@ module Spree::CustomizedCaching::Product
 				if Rails.cache.exist?(cache_key)
 					Rails.cache.delete(cache_key)
 				end
-				Rails.cache.write(cache_key, data, expires_in: 24.hours)
+				Rails.cache.write(cache_key, data, expires_in: 7.days)
 			end
 		end
 
