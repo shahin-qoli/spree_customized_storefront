@@ -1,7 +1,7 @@
 module Spree::Api::V3::Storefront
 	class MiarzeController < Spree::Api::V2::BaseController
-
-		def get_products_of_taxon
+		
+		def validate_params
 			if params[:taxon_id].nil? && params[:permalink].nil?
 				raise "You MUST provide taxon_id OR permalink"
 			end
@@ -13,20 +13,39 @@ module Spree::Api::V3::Storefront
 			end
 			if taxon.nil?
 				raise "Couldnt find taxon with #{key}"
-			else
-				@taxon_id = taxon.id
-				@all_data_ids = taxon.products.map(&:id)
-				@count = @all_data_ids.size
-				if params[:sort_by].nil?
-					@products = taxon.products.page(params[:page || 1]).per(params[:per_page] || 24)
-				else
-					@products = sort.page(params[:page || 1]).per(params[:per_page] || 24)
-				end
-			end
+			end	
+			taxon.id					
+		end
+		def get_products_of_taxon
 
+			@taxon_id = validate_params
+			order_criteria = [{ in_stock: :desc }]
+			case params[:sort_by]
+			when "price"
+				order_criteria << { price: :desc }
+			when "-price"
+				order_criteria << { price: :asc }
+			else
+				order_criteria << { "taxon_positions.#{@taxon_id}" => :asc }
+			end
+			p "11111111111111111111111111"
+			@all_results = Spree::Product.search("*",
+		    where: { taxon_ids: @taxon_id },
+		    order: order_criteria,
+		    page: params[:page] || 1,
+		    per_page: params[:per_page] || 24
+		  ).map(&:id)	
+			p "222222222222222"
+		  @all_data_ids = Spree::Product.search("*",
+		    where: { taxon_ids: @taxon_id },
+		    load: false, # Prevents loading full objects, only fetches IDs
+		    fields: [:product_id] # Only fetches the product_id field
+		  ).map(&:id)
+			@count = @all_data_ids.size
+			p "33333333333333"
 			data = {
-				:products => products_in_taxon_serializer.new(@products).serializable_hash[:data].map { |d| d[:attributes] },
-				:meta => gather_meta_data
+				:products => fetch_products(@all_results),
+				:meta => gather_meta_data	
 			}
 			render :json => data
 		rescue StandardError => e
@@ -34,9 +53,26 @@ module Spree::Api::V3::Storefront
 		end
 
 		private
-		def products_in_taxon_serializer
-			Spree::Api::V3::Storefront::ProductInTaxonSerializer
-		end
+    def generate_cache_key(id)
+      "pt_#{id}_cache"
+    end			
+    def fetch_products(product_ids)
+      keys = product_ids.map { |id| generate_cache_key(id) }
+      products = Rails.cache.read_multi(*keys)
+      missing_ids = product_ids.reject { |id| products[generate_cache_key(id)] }
+      p "<MMMMMMMMMMMMMMMMMM"
+      p missing_ids
+      unless missing_ids.empty?
+        cache_products_service.new(missing_ids).execute
+        new_products = Rails.cache.read_multi(*missing_ids.map { |id| generate_cache_key(id) })
+        products.merge!(new_products)
+      end
+      p products.values.compact
+      p "EEEEEEEEEEEEEEEEEND"
+
+      products.values.compact
+    end
+
 		def keep_unique_paths(paths)
 			# Build a trie to track all paths and their subpaths
 			trie = Hash.new { |h, k| h[k] = Hash.new(&h.default_proc) }
@@ -55,18 +91,33 @@ module Spree::Api::V3::Storefront
 			end
 		end
 		def customized_collect_taxons
-            keep_unique_paths(Spree::Product.where(id: @all_data_ids).
-            map{|item| item.taxons.reject{|tx| tx.hide_from_nav}}.flatten.uniq.
-            map(&:permalink).reject{|item| item.include?("brndh")}.map{|item| item.split("/")}).map{|item| item.join("/")}
-        end
-
-
+		  # Perform the search for products with specific IDs
+		  p "5454545454545"
+		  result = Spree::Product.search(
+		    '*', # Match all products (you can modify this to suit your needs)
+		    where: { id: @all_data_ids }, # Filter by product IDs
+		    fields: [:taxon_permalinks], # Fetch taxon data for the products
+		    load: false
+		  ).map(&:taxon_permalinks).flatten.uniq
+		  p "/kkkkkkkkkkkkkkkkkkkkkkkk"
+		  p result
+		  # Collect the taxon permalinks reject { |p| p.include?("brndh") }
+		  # taxons = result.results.flat_map do |product|
+		  #   product.taxons.reject { |taxon| taxon.hide_from_nav || taxon.permalink.include?("brndh") }.map(&:permalink)
+		  # end
+		  result
+		  # Keep unique paths, remove subpaths, and reconstruct the permalinks
+		  #keep_unique_paths(taxons.map { |path| path.split("/") }).map { |item| item.join("/") }
+		end
+		def total_pages
+			@all_data_ids.size / (params[:per_page] ||24)+ 1
+		end
 		def gather_meta_data
-
+			p "STAAAAAAAAAAArt"
 			meta = {
-				"count": @products.size,
-				"total_count": @products.total_count,
-				"total_pages": @products.total_pages,
+				"count": @all_results.size,
+				"total_count": @all_data_ids.size,
+				"total_pages": total_pages,
 				"filters":{
 					"option_types": customized_collect_option_types,
 					"taxons": customized_collect_taxons
@@ -83,58 +134,26 @@ module Spree::Api::V3::Storefront
 			  "option_values": brands
 			}] 
 		end	
-        def get_brands
-	        keys = @all_data_ids.map { |id| "spree_brands_product_#{id}_cache" }
-	        brands = Rails.cache.read_multi(*keys)
-	        missing_ids = @all_data_ids.reject { |item| brands["spree_brands_product_#{item}_cache"] }
-	        unless missing_ids.empty?
-	          cache_brands_service.new(missing_ids).execute
-	          new_brands = Rails.cache.read_multi(*missing_ids.map { |id| "spree_brands_product_#{id}_cache" })
-	          brands.merge!(new_brands)
-	        end
-	        brands.values.compact.flatten.uniq
-        end		
+    def get_brands
+    	 p "STAAAAAART TO GET BRAND"
+      keys = @all_data_ids.map { |id| "spree_brands_product_#{id}_cache" }
+      p keys
+      brands = Rails.cache.read_multi(*keys)
+      missing_ids = @all_data_ids.reject { |item| brands["spree_brands_product_#{item}_cache"] }
+      unless missing_ids.empty?
+        cache_brands_service.new(missing_ids).execute
+        new_brands = Rails.cache.read_multi(*missing_ids.map { |id| "spree_brands_product_#{id}_cache" })
+        brands.merge!(new_brands)
+      end
+      brands.values.compact.flatten.uniq
+    end		
 
 		def cache_brands_service
 			Spree::CustomizedCaching::Brand::Cache
 		end       
-
-		def sort
-			case params[:sort_by]
-			when "default"
-				sql = <<-SQL
-					SELECT spree_products.id
-					FROM spree_products
-					JOIN spree_products_taxons ON spree_products_taxons.product_id = spree_products.id
-					WHERE spree_products_taxons.taxon_id = #{@taxon_id}
-					GROUP BY spree_products.id
-					ORDER BY 
-					MAX(spree_products.in_stock::int) DESC,  -- Ensure in-stock products come first
-					MIN(spree_products_taxons.position) ASC
-				SQL
-				product_ids = ActiveRecord::Base.connection.execute(sql).map { |row| row['id'] }
-
-				ordered_products_relation = Spree::Product
-				.select("#{Spree::Product.table_name}.*, 
-				   ARRAY_POSITION(ARRAY[#{product_ids.join(',')}]::bigint[], #{Spree::Product.table_name}.id) AS position")
-				.where(id: product_ids)
-				.order(Arel.sql("in_stock DESC, position"))
-       		when 'price'
-            	sort_by_price(:desc)
-            when "-price"
-            	sort_by_price(:asc)
-            else
-            	Spree::Product.where(id: @all_data_ids)
-            end
-		end 
-		def sort_by_price(order)
-			sorted_ids = Spree::Product.search(where:{product_id: @all_data_ids},order: {in_stock: :desc, price: order}, load: false).pluck(:id)
-			ordered_products_relation = Spree::Product
-			.select("#{Spree::Product.table_name}.*, 
-			   ARRAY_POSITION(ARRAY[#{sorted_ids.join(',')}]::bigint[], #{Spree::Product.table_name}.id) AS position")
-			.where(id: sorted_ids)
-			.order(Arel.sql("in_stock DESC, position"))
-		end	
+    def cache_products_service
+      Spree::CustomizedCaching::Product::ProductTaxonCache
+    end
 	end
 end
 
