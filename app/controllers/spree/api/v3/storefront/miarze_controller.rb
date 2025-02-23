@@ -67,8 +67,9 @@ module Spree::Api::V3::Storefront
         new_products = Rails.cache.read_multi(*missing_ids.map { |id| generate_cache_key(id) })
         products.merge!(new_products)
       end
-
-      products.values.compact
+      p "LOgOOOOOOOOG"
+      p products.values.compact
+      products.values.compact.map{|item| item[:data]}.flatten
     end
 
 		def customized_collect_taxons
