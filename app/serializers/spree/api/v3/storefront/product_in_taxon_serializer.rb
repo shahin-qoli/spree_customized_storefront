@@ -38,7 +38,18 @@ module Spree::Api::V3::Storefront
       if product.variant_images.first.nil?
         nil
       else
-			  product.variant_images.first.generate_url(size: image_size)    
+        img = product.variant_images.first
+        {
+          "id": img.id,
+          "alt": img.alt,
+          "styles": [
+          {
+           "height": 240,
+           "width": 240,
+           "url": img.generate_url(size: image_size) 
+          }
+                    ]
+                  }			     
       end
 		end   
 
@@ -48,7 +59,7 @@ module Spree::Api::V3::Storefront
 		end
 
     def self.image_size
-      "600x600"
+      "240x240"
     end
 	end
 end
