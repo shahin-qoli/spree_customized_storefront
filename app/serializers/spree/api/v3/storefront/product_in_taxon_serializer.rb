@@ -34,12 +34,12 @@ module Spree::Api::V3::Storefront
     attribute :display_compare_at_price do |product, params|
       display_compare_at_price(product, currency)
     end
-		attribute :image do |product|
+		attribute :images do |product|
       if product.variant_images.first.nil?
-        nil
+        []
       else
         img = product.variant_images.first
-        {
+        [{
           "id": img.id,
           "alt": img.alt,
           "styles": [
@@ -49,7 +49,7 @@ module Spree::Api::V3::Storefront
            "url": img.generate_url(size: image_size) 
           }
                     ]
-                  }			     
+                  }]			     
       end
 		end   
 
