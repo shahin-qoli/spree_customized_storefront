@@ -20,8 +20,8 @@ module Spree::Api::V3::Storefront
 			@all_results = Spree::Product.search("*",
 		    where: where_criteria,
 		    order: order_criteria,
-		    page: params[:page] || 1,
-		    per_page: params[:per_page] || 24
+		    page: params[:page].to_i || 1,
+		    per_page: params[:per_page].to_i || 24
 		  ).map(&:id)	
 		  @all_data_ids = Spree::Product.search("*",
 		    where: where_criteria,
