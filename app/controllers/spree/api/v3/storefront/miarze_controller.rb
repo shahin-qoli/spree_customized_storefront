@@ -19,12 +19,15 @@ module Spree::Api::V3::Storefront
 			if !filter_option_values_ids.nil?
 				where_criteria[:options_value_ids] = filter_option_values_ids
 			end
-			if !filter_in_stock.nil?
+			if (!filter_in_stock.nil? && filter_in_stock.is_a?(TrueClass))
 				where_criteria[:in_stock] = filter_in_stock
 			end
 			if !filter_price.nil?
 				where_criteria[:price] = { gte: filter_price.min, lte: filter_price.max }
 			end
+			p "HHHHHHHHHHHHHHHHH"
+			p where_criteria
+			p order_criteria
 			page = params[:page].to_i > 0 ? params[:page].to_i : 1
 			@per_page =  params[:per_page].to_i > 0 ?  params[:per_page].to_i : 24 
 			@all_results = Spree::Product.search("*",
@@ -45,7 +48,7 @@ module Spree::Api::V3::Storefront
 			}
 			render :json => data
 		rescue StandardError => e
-			render :json => {:error => e.message}
+			render :json => {:error => e.message}, status: 400
 		end
 
 		private

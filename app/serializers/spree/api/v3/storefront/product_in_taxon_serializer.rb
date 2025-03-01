@@ -1,13 +1,26 @@
 module Spree::Api::V3::Storefront
 	class ProductInTaxonSerializer < Spree::Api::V3::BaseSerializer
 		include ::Spree::Api::V2::DisplayMoneyHelper
-		attributes :id, :h1_title, :name, :display_price
-		attributes :name, :available_on, :h1_title, :meta_description, :meta_keywords,:public_metadata
+    attribute :_productId do |product|
+      product.id
+    end
+
+    attribute :metaDescription  do |product|
+      product.meta_description
+    end
+    attribute :metaTitle  do |product|
+      product.meta_title
+    end
+    attribute :metaKeywords do |product|
+      product.meta_keywords
+    end
+		attributes :h1_title, :name
+		attributes :name, :available_on, :h1_title,:public_metadata
     attribute :purchasable do |product|
       product.purchasable?
     end
 
-    attribute :in_stock do |product|
+    attribute :inStock do |product|
       product.in_stock?
     end
 
@@ -19,17 +32,17 @@ module Spree::Api::V3::Storefront
       product.available?
     end
 
-    attribute :price do |product, params|
-      price(product, currency)
+    attribute :price do |product|
+      {
+        current: price(product, currency),
+        original: compare_at_price(product, currency)
+      }
     end
 
-    attribute :display_price do |product, params|
+    attribute :displayPrice do |product, params|
       display_price(product, currency)
     end
 
-    attribute :compare_at_price do |product, params|
-      compare_at_price(product, currency)
-    end
 
     attribute :display_compare_at_price do |product, params|
       display_compare_at_price(product, currency)
