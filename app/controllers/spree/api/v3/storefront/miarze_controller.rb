@@ -17,13 +17,14 @@ module Spree::Api::V3::Storefront
 			if !filter_option_values_ids.nil?
 				where_criteria[:options_value_ids] = filter_option_values_ids
 			end
+
 			page = params[:page].to_i > 0 ? params[:page].to_i : 1
-			per_page =  params[:per_page].to_i > 0 ?  params[:per_page].to_i : 24 
+			@per_page =  params[:per_page].to_i > 0 ?  params[:per_page].to_i : 24 
 			@all_results = Spree::Product.search("*",
 		    where: where_criteria,
 		    order: order_criteria,
 		    page: page,
-		    per_page: per_page
+		    per_page: @per_page
 		  ).map(&:id)	
 		  @all_data_ids = Spree::Product.search("*",
 		    where: where_criteria,
@@ -84,7 +85,7 @@ module Spree::Api::V3::Storefront
 		  result
 		end
 		def total_pages
-			@all_data_ids.size / (params[:per_page] ||24)+ 1
+			@all_data_ids.size / (@per_page)+ 1
 		end
 		def gather_meta_data
 			meta = {
