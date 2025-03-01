@@ -13,11 +13,18 @@ module Spree::Api::V3::Storefront
 				order_criteria << { "taxon_positions.#{@taxon_id}" => :asc }
 			end
 			filter_option_values_ids = prepare_option_value_ids(params.dig(:filter, :option_value_ids))
+			filter_in_stock = params.dig(:filter, :in_stock)
+			filter_price = map_prices(String(params.dig(:filter, :price)).split(','))
 			where_criteria = { taxon_ids: @taxon_id }
 			if !filter_option_values_ids.nil?
 				where_criteria[:options_value_ids] = filter_option_values_ids
 			end
-
+			if !filter_in_stock.nil?
+				where_criteria[:in_stock] = filter_in_stock
+			end
+			if !filter_price.nil?
+				where_criteria[:price] = { gte: filter_price.min, lte: filter_price.max }
+			end
 			page = params[:page].to_i > 0 ? params[:page].to_i : 1
 			@per_page =  params[:per_page].to_i > 0 ?  params[:per_page].to_i : 24 
 			@all_results = Spree::Product.search("*",
@@ -129,7 +136,12 @@ module Spree::Api::V3::Storefront
     def prepare_option_value_ids(option_values_ids)
         return if option_values_ids.nil? || option_values_ids.to_s.blank?
       option_values_ids.to_s.split(',').map(&:to_i)
-    end    
+    end   
+	  def map_prices(prices)
+	    prices.map do |price|
+	      price == 'Infinity' ? Float::INFINITY : price.to_f
+	    end
+	  end 
 	end
 end
 
