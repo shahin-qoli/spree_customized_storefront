@@ -1,6 +1,6 @@
 module Spree::Api::V3::Storefront
 	class MiarzeController < Spree::Api::V2::BaseController
-
+		include Spree::Api::V2::Caching
 		def get_products_of_taxon
 			@taxon_id = validate_params
 			order_criteria = [{ in_stock: :desc }]
@@ -25,9 +25,6 @@ module Spree::Api::V3::Storefront
 			if !filter_price.nil?
 				where_criteria[:price] = { gte: filter_price.min, lte: filter_price.max }
 			end
-			p "HHHHHHHHHHHHHHHHH"
-			p where_criteria
-			p order_criteria
 			page = params[:page].to_i > 0 ? params[:page].to_i : 1
 			@per_page =  params[:per_page].to_i > 0 ?  params[:per_page].to_i : 24 
 			@all_results = Spree::Product.search("*",
@@ -80,19 +77,20 @@ module Spree::Api::V3::Storefront
         new_products = Rails.cache.read_multi(*missing_ids.map { |id| generate_cache_key(id) })
         products.merge!(new_products)
       end
-      p "LOgOOOOOOOOG"
-      p products.values.compact
       products.values.compact.map{|item| item[:data]}.flatten
     end
 
 		def customized_collect_taxons
-		  result = Spree::Product.search(
+			cache_key_parts = @all_data_ids.flatten.join('-')
+			key = Digest::MD5.hexdigest(cache_key_parts)
+			Rails.cache.fetch(key) do
+				Spree::Product.search(
 		    '*', # Match all products (you can modify this to suit your needs)
 		    where: { id: @all_data_ids }, # Filter by product IDs
 		    fields: [:taxon_permalinks], # Fetch taxon data for the products
 		    load: false
 		  ).map(&:taxon_permalinks).flatten.uniq
-		  result
+			end
 		end
 		def total_pages
 			@all_data_ids.size / (@per_page)+ 1
