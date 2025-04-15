@@ -9,6 +9,7 @@ module SpreeCustomizedStorefront::Spree::ProductDecorator
 		ids = []
 		ids.push(self.id)
 		Spree::CustomizedCaching::Product::Cache.new(ids).execute
+		Spree::CustomizedCaching::Product::ProductTaxonCache.new(ids).execute
 	end
 end
 
