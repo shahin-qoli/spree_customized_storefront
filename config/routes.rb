@@ -14,6 +14,7 @@ Spree::Core::Engine.add_routes do
         resource :miarze, controller: :miarze do
           collection do
             get "get_products_of_taxon"
+            get "get_product"
           end
         end
       end
