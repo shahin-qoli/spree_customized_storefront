@@ -69,7 +69,8 @@ module Spree::Api::V3::Storefront
       data = variants.values.compact.map{|item| item[:data]}.flatten
 
       render :json => data	
-      
+ 		rescue StandardError => e
+			render :json => {:error => e.message}, status: 400     
 		end
 
 		private
