@@ -3,35 +3,16 @@ module Spree::Api::V3::Storefront
 		include Spree::Api::V3::GetProductsTaxon
 		def get_products_of_taxon
 			@taxon_id = validate_params
-			order_criteria = [{ in_stock: :desc }]
-			case params[:sort_by]
-			when "price"
-				order_criteria << { price: :desc }
-			when "-price"
-				order_criteria << { price: :asc }
-			else
-				order_criteria << { "taxon_positions.#{@taxon_id}" => :asc }
-			end
-			filter_option_values_ids = prepare_option_value_ids(params.dig(:filter, :option_value_ids))
-			filter_in_stock = params.dig(:filter, :in_stock)
-			filter_price = map_prices(String(params.dig(:filter, :price)).split(','))
-			where_criteria = { taxon_ids: @taxon_id }
-			if !filter_option_values_ids.nil?
-				where_criteria[:options_value_ids] = filter_option_values_ids
-			end
-			if (!filter_in_stock.nil? && filter_in_stock.is_a?(TrueClass))
-				where_criteria[:in_stock] = filter_in_stock
-			end
-			if !filter_price.nil?
-				where_criteria[:price] = { gte: filter_price.min, lte: filter_price.max }
-			end
-			page = params[:page].to_i > 0 ? params[:page].to_i : 1
-			@per_page =  params[:per_page].to_i > 0 ?  params[:per_page].to_i : 24 
+			order_criteria = prepare_order_criteria
+
+			base_criteria = { taxon_ids: @taxon_id }
+			where_criteria = prepare_where_criteria(base_criteria)
+			pagination_params = prepare_paginaton_params
 			@all_results = Spree::Product.search("*",
 		    where: where_criteria,
 		    order: order_criteria,
-		    page: page,
-		    per_page: @per_page
+		    page: pagination_params[0].to_i,
+		    per_page: @per_page.to_i
 		  ).map(&:id)	
 		  @all_data_ids = Spree::Product.search("*",
 		    where: where_criteria,
@@ -73,13 +54,82 @@ module Spree::Api::V3::Storefront
 			render :json => {:error => e.message}, status: 400     
 		end
 
+		def search_products
+			search_param = validate_params_search
+			order_criteria = prepare_order_criteria
+			base_criteria = {}
+			where_criteria = prepare_where_criteria(base_criteria)
+			pagination_params = prepare_paginaton_params
+			@all_results = Spree::Product.search(search_param,
+		    where: where_criteria,
+		    order: order_criteria,
+		    page: pagination_params[0].to_i,
+		    per_page: @per_page.to_i
+		  ).map(&:id)	
+		  @all_data_ids = Spree::Product.search(search_param,
+		    where: where_criteria,
+		    load: false # Only fetches the product_id field
+		  ).map(&:id)
+			@count = @all_data_ids.size
+			data = {
+				:products => fetch_products(@all_results),
+				:meta => gather_meta_data	
+			}
+			render :json => data
+		# rescue StandardError => e
+		# 	render :json => {:error => e.message}, status: 400			
+		end
 		private
 		def cache_single_product_service
           Spree::CustomizedCaching::Product::ProductSingleCache		
 		end
 	  def generate_cache_key_single_product(id)
 	    	Digest::MD5::hexdigest("vi_#{id.to_s}_cache")
-	   end			
+	  end	
+
+	  def prepare_order_criteria
+			order_criteria = [{ in_stock: :desc }]
+			case params[:sort_by]
+			when "price"
+				order_criteria << { price: :desc }
+			when "-price"
+				order_criteria << { price: :asc }
+			end	
+			order_criteria << { "taxon_positions.#{@taxon_id}" => :asc } if !@taxon_id.nil?
+			p "logggggggg criteria"
+			puts order_criteria
+			order_criteria
+	  end		
+
+	  def prepare_where_criteria(where_criteria)
+			filter_option_values_ids = prepare_option_value_ids(params.dig(:filter, :option_value_ids))
+			filter_in_stock = params.dig(:filter, :in_stock)
+			filter_price = map_prices(String(params.dig(:filter, :price)).split(','))
+			if !filter_option_values_ids.nil?
+				where_criteria[:options_value_ids] = filter_option_values_ids
+			end
+			if (!filter_in_stock.nil? && filter_in_stock.is_a?(TrueClass))
+				where_criteria[:in_stock] = filter_in_stock
+			end
+			if !filter_price.nil?
+				where_criteria[:price] = { gte: filter_price.min, lte: filter_price.max }
+			end
+
+			where_criteria
+	  end
+
+	  def prepare_paginaton_params
+			page = params[:page].to_i > 0 ? params[:page].to_i : 1
+			@per_page =  params[:per_page].to_i > 0 ?  params[:per_page].to_i : 24 
+			[page, @per_page]
+	  end
+
+    def validate_params_search
+      if params[:search_term].nil?
+        raise "You MUST provide search_term"
+      end
+      params[:search_term].strip
+    end
 	end
 end
 

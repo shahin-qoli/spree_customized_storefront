@@ -15,6 +15,7 @@ Spree::Core::Engine.add_routes do
           collection do
             get "get_products_of_taxon"
             get "get_product"
+            get "search_products"
           end
         end
       end
