@@ -87,19 +87,22 @@ module Spree::Api::V3::Storefront
 	    	Digest::MD5::hexdigest("vi_#{id.to_s}_cache")
 	  end	
 
-	  def prepare_order_criteria
-			order_criteria = [{ in_stock: :desc }]
-			case params[:sort_by]
-			when "price"
-				order_criteria << { price: :desc }
-			when "-price"
-				order_criteria << { price: :asc }
-			end	
-			order_criteria << { "taxon_positions.#{@taxon_id}" => :asc } if !@taxon_id.nil?
-			p "logggggggg criteria"
-			puts order_criteria
-			order_criteria
-	  end		
+	
+		def prepare_order_criteria
+		  order_criteria = [{ in_stock: :desc }]
+		  case params[:sort_by]
+		  when "price"
+		    order_criteria << { price: :desc }
+		  when "-price"
+		    order_criteria << { price: :asc }
+		  end
+
+		  if @taxon_id
+		    order_criteria << { "taxon_positions.#{@taxon_id}" => { order: :asc, unmapped_type: "long" } }
+		  end
+
+		  order_criteria
+		end
 
 	  def prepare_where_criteria(where_criteria)
 			filter_option_values_ids = prepare_option_value_ids(params.dig(:filter, :option_value_ids))
