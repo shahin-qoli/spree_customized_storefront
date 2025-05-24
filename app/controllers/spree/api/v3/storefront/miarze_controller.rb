@@ -97,10 +97,23 @@ module Spree::Api::V3::Storefront
 		    order_criteria << { price: :asc }
 		  end
 
-		  if @taxon_id
-		    order_criteria << { "taxon_positions.#{@taxon_id}" => { order: :asc, unmapped_type: "long" } }
-		  end
-
+		  # if @taxon_id
+		  #   order_criteria << { "taxon_positions.#{@taxon_id}" => { order: :asc, unmapped_type: "long" } }
+		  # end
+		if @taxon_id
+		  order_criteria << {
+		    "taxon_positions.position" => {
+		      order: :asc,
+		      nested: {
+			path: "taxon_positions",
+			filter: {
+			  term: { "taxon_positions.id": @taxon_id.to_i }
+			}
+		      },
+		      unmapped_type: "long"
+		    }
+		  }
+		end
 		  order_criteria
 		end
 
