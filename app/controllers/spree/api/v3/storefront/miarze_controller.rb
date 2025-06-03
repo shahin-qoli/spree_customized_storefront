@@ -1,6 +1,7 @@
 module Spree::Api::V3::Storefront
 	class MiarzeController < Spree::Api::V2::BaseController
 		include Spree::Api::V3::GetProductsTaxon
+		before_action :check_admin_role, only: [:reindex_products]
 		def get_products_of_taxon
 			@taxon_id = validate_params
 			order_criteria = prepare_order_criteria
@@ -76,9 +77,23 @@ module Spree::Api::V3::Storefront
 				:meta => gather_meta_data	
 			}
 			render :json => data
-		# rescue StandardError => e
-		# 	render :json => {:error => e.message}, status: 400			
+		rescue StandardError => e
+		 	render :json => {:error => e.message}, status: 400			
 		end
+
+		def reindex_products
+			Spree::BrxElastic::ReindexProductsJob.perform_later
+			render :json =>{:result => true}
+			# if Spree::Product.reindex
+			# 	render :json =>{:result => true}
+			# else
+			# 	render :json =>{:result => false}
+			# end
+ 		rescue StandardError => e
+			render :json => {:error => e.message}, status: 400  				
+		end
+
+
 		private
 		def cache_single_product_service
           Spree::CustomizedCaching::Product::ProductSingleCache		
@@ -89,11 +104,11 @@ module Spree::Api::V3::Storefront
 
 	
 		def prepare_order_criteria
-		  order_criteria = [{ in_stock: :desc }]
+		  order_criteria = [{ sort_priority: :desc }]
 		  case params[:sort_by]
-		  when "price"
-		    order_criteria << { price: :desc }
 		  when "-price"
+		    order_criteria << { price: :desc }
+		  when "price"
 		    order_criteria << { price: :asc }
 		  end
 
@@ -126,6 +141,7 @@ module Spree::Api::V3::Storefront
 			end
 			if (!filter_in_stock.nil? && filter_in_stock.is_a?(TrueClass))
 				where_criteria[:in_stock] = filter_in_stock
+				where_criteria[:available] = filter_in_stock
 			end
 			if !filter_price.nil?
 				where_criteria[:price] = { gte: filter_price.min, lte: filter_price.max }
@@ -146,6 +162,13 @@ module Spree::Api::V3::Storefront
       end
       params[:search_term].strip
     end
+
+		def check_admin_role
+			user = spree_current_user
+			unless user&.has_spree_role?('admin')
+			  render json: { error: 'Unauthorized' }, status: :unauthorized
+			end
+		end
 	end
 end
 

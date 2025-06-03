@@ -11,11 +11,16 @@ Spree::Core::Engine.add_routes do
     end  
     namespace :v3 do
       namespace :storefront do
+        resource :version, controller: :version do
+          get 'backend_version'
+        end
         resource :miarze, controller: :miarze do
           collection do
             get "get_products_of_taxon"
             get "get_product"
             get "search_products"
+            get "reindex_products"
+            get "backend_version"
           end
         end
       end
