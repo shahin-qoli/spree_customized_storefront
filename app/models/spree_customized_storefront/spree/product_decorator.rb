@@ -125,17 +125,19 @@ module SpreeCustomizedStorefront::Spree::ProductDecorator
 	def generate_related_products(relation_type_id: nil)
 	  # Always fetch products from deepest taxon
 	  lngst_taxon = taxons.sort_by(&:depth).last
-	  i = 0
-	  taxon_products = lngst_taxon.products.sample(25).select do |item|
-	    if item.in_stock? && item.available?
-	      i += 1
-	      i <= 10
-	    else
-	      false
-	    end
-	  end
-	  products_from_taxon = Spree::Product.where(id: taxon_products.map(&:id))
-
+	  products_from_taxon = []
+	  if (lngst_taxon && !lngst_taxon.products.empty?)
+		  i = 0
+		  taxon_products = lngst_taxon.products.sample(25).select do |item|
+		    if item.in_stock? && item.available?
+		      i += 1
+		      i <= 10
+		    else
+		      false
+		    end
+		  end
+		  products_from_taxon = Spree::Product.where(id: taxon_products.map(&:id))
+		end
 	  # Handle relation-based products only if relation_type is provided
 	  products_from_relation = []
 	  if relation_type_id.present?

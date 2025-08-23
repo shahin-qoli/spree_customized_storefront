@@ -1,4 +1,15 @@
+update_date: 2025-06-12
+version: 1.1
+last changes:
+- add update taxons -> spree_product_api
+
 Version: 1.0
 last changes: 
-- fix bug in sort price
+- fix bug in sort price  
+
 - add manual payment 
+
+
+2025-08-23
+-fix next in checkout: in state address, we review line items to handle removing unavailable and not in stock items and return removed lines
+- fix when the longest taxon doesnt have any products to show in related products
