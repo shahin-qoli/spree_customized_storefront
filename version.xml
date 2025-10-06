@@ -1,15 +1,97 @@
-update_date: 2025-06-12
-version: 1.1
-last changes:
-- add update taxons -> spree_product_api
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="#style"?>
+<!DOCTYPE UpdateLog [
+  <!ATTLIST xsl:stylesheet id ID #REQUIRED>
+]>
 
-Version: 1.0
-last changes: 
-- fix bug in sort price  
+<UpdateLog version="1.2" releaseDate="2025-10-06">
 
-- add manual payment 
+  <xsl:stylesheet id="style" version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="UTF-8" indent="yes"/>
 
+    <xsl:template match="/">
+      <html>
+        <head>
+          <title>Update Log - Version <xsl:value-of select="UpdateLog/@version"/></title>
+          <style>
+            body {
+              font-family: "Segoe UI", Arial, sans-serif;
+              background: #f8fafc;
+              color: #1e293b;
+              margin: 40px;
+              line-height: 1.6;
+            }
+            h1 {
+              color: #0f172a;
+              border-bottom: 2px solid #38bdf8;
+              padding-bottom: 8px;
+            }
+            h2 {
+              margin-top: 24px;
+              color: #0369a1;
+            }
+            ul {
+              background: #ffffff;
+              padding: 16px 24px;
+              border-radius: 12px;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+              list-style-type: disc;
+            }
+            li {
+              margin-bottom: 8px;
+            }
+            .meta {
+              font-size: 14px;
+              color: #475569;
+              margin-bottom: 20px;
+            }
+            .gem-list {
+              background: #ecfeff;
+              border-left: 4px solid #06b6d4;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>🧩 Update Log — Version <xsl:value-of select="UpdateLog/@version"/></h1>
+          <div class="meta">📅 Release Date: <xsl:value-of select="UpdateLog/@releaseDate"/></div>
 
-2025-08-23
--fix next in checkout: in state address, we review line items to handle removing unavailable and not in stock items and return removed lines
-- fix when the longest taxon doesnt have any products to show in related products
+          <h2>🚀 Changes</h2>
+          <ul>
+            <xsl:for-each select="UpdateLog/Changes/Change">
+              <li><xsl:value-of select="."/></li>
+            </xsl:for-each>
+          </ul>
+
+          <h2>💎 Updated Gems</h2>
+          <ul class="gem-list">
+            <xsl:for-each select="UpdateLog/UpdatedGems/Gem">
+              <li><xsl:value-of select="."/></li>
+            </xsl:for-each>
+          </ul>
+        </body>
+      </html>
+    </xsl:template>
+  </xsl:stylesheet>
+
+  <Changes>
+    <Change>Fixed bugs in product price, availability, and taxon positions in Elastic mapping.</Change>
+    <Change>Fixed bug in order shipment splitting.</Change>
+    <Change>Added new endpoint for updating taxons of a product.</Change>
+    <Change>Added creation of incoming payment in B1 for a Manual Payment (e.g., Card to Card).</Change>
+    <Change>Fixed bug in checkout order — removed unavailable products from line items.</Change>
+    <Change>Fixed bug in updating price request.</Change>
+    <Change>Fixed product link in admin panel.</Change>
+    <Change>Removed Philia Club.</Change>
+    <Change>Fixed issue when the longest taxon didn’t have any products to show in related products.</Change>
+  </Changes>
+
+  <UpdatedGems>
+    <Gem>SpreeBrxSorter</Gem>
+    <Gem>SpreeBrxVendor</Gem>
+    <Gem>SpreeProductApi</Gem>
+    <Gem>SpreeB1Docs</Gem>
+    <Gem>SpreeCustomizedStorefront</Gem>
+    <Gem>SpreePriceManagement</Gem>
+    <Gem>SpreeBrxPhiliaClub</Gem>
+  </UpdatedGems>
+</UpdateLog>
