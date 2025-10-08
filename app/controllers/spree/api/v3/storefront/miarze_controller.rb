@@ -115,6 +115,7 @@ module Spree::Api::V3::Storefront
 		  # if @taxon_id
 		  #   order_criteria << { "taxon_positions.#{@taxon_id}" => { order: :asc, unmapped_type: "long" } }
 		  # end
+
 		if @taxon_id
 		  order_criteria << {
 		    "taxon_positions.position" => {
@@ -129,6 +130,8 @@ module Spree::Api::V3::Storefront
 		    }
 		  }
 		end
+			p "OOOOOOOOOOOOOOOO"
+			p order_criteria
 		  order_criteria
 		end
 
