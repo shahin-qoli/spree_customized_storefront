@@ -21,7 +21,7 @@ module Spree::Api::V3::Storefront
     end
 
     attribute :inStock do |product|
-      product.in_stock?
+      product.in_stock? && product.available?
     end
 
     attribute :backorderable do |product|
@@ -29,7 +29,7 @@ module Spree::Api::V3::Storefront
     end
 
     attribute :available do |product|
-      product.available?
+      product.in_stock? && product.available?
     end
 
     attribute :price do |product|

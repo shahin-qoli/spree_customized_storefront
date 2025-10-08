@@ -10,7 +10,7 @@ module Spree::Api::V3::Storefront
       variant.id
     end  
     attribute :available do |variant|
-      variant.available?
+      variant.in_stock? && variant.available?
     end
     attribute :h1_title do |variant|
       variant.product.h1_title
@@ -65,7 +65,7 @@ module Spree::Api::V3::Storefront
     end
 
     attribute :inStock do |variant|
-      variant.in_stock?
+      variant.in_stock? && variant.available?
     end
     attribute :brand do |variant|
       variant.product.generate_brand
