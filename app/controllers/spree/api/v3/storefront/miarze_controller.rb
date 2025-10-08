@@ -104,32 +104,32 @@ module Spree::Api::V3::Storefront
 
 	
 		def prepare_order_criteria
-		  order_criteria = [{ sort_priority_numeric: { order: :desc, unmapped_type: "long" } }]
-		  case params[:sort_by]
-		  when "-price"
-		    order_criteria << { price: :desc }
-		  when "price"
-		    order_criteria << { price: :asc }
-		  end
+		  order_criteria = [{ sort_priority_numeric: { order: :desc } }]
+		#   case params[:sort_by]
+		#   when "-price"
+		#     order_criteria << { price: :desc }
+		#   when "price"
+		#     order_criteria << { price: :asc }
+		#   end
 
-		  # if @taxon_id
-		  #   order_criteria << { "taxon_positions.#{@taxon_id}" => { order: :asc, unmapped_type: "long" } }
-		  # end
+		#   # if @taxon_id
+		#   #   order_criteria << { "taxon_positions.#{@taxon_id}" => { order: :asc, unmapped_type: "long" } }
+		#   # end
 
-		if @taxon_id
-		  order_criteria << {
-		    "taxon_positions.position" => {
-		      order: :asc,
-		      nested: {
-			path: "taxon_positions",
-			filter: {
-			  term: { "taxon_positions.id": @taxon_id.to_i }
-			}
-		      },
-		      unmapped_type: "long"
-		    }
-		  }
-		end
+		# if @taxon_id
+		#   order_criteria << {
+		#     "taxon_positions.position" => {
+		#       order: :asc,
+		#       nested: {
+		# 	path: "taxon_positions",
+		# 	filter: {
+		# 	  term: { "taxon_positions.id": @taxon_id.to_i }
+		# 	}
+		#       },
+		#       unmapped_type: "long"
+		#     }
+		#   }
+		# end
 			p "OOOOOOOOOOOOOOOO"
 			p order_criteria
 		  order_criteria
