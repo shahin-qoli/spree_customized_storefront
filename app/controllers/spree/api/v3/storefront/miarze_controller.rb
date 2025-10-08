@@ -104,7 +104,7 @@ module Spree::Api::V3::Storefront
 
 	
 		def prepare_order_criteria
-		  order_criteria = [{ sort_priority: :desc }]
+		  order_criteria = [{ sort_priority_numeric: { order: :desc, unmapped_type: "long" } }]
 		  case params[:sort_by]
 		  when "-price"
 		    order_criteria << { price: :desc }
