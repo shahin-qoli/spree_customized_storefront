@@ -1,6 +1,7 @@
 module SpreeCustomizedStorefront::Spree::ProductDecorator
 	def self.prepended(base)
 		base.after_update_commit :update_in_product_cache
+		base.after_destroy :remove_from_index_and_cache
 	end
 
 	def generate_breadcrumb
@@ -171,6 +172,13 @@ module SpreeCustomizedStorefront::Spree::ProductDecorator
 		Spree::CustomizedCaching::Product::ProductTaxonCache.new(ids).execute
 		Spree::CustomizedCaching::Product::ProductSingleCache.new(self.variants.map(&:id)).execute
 	end
+    # حذف محصول از ایندکس و پاک کردن کش
+    def remove_from_index_and_cache
+      searchkick_index.remove(self)
+      Rails.cache.delete("pt_#{id}_cache")
+    rescue => e
+      Rails.logger.error("Failed to remove product #{id} from index or cache: #{e.message}")
+    end	
 end
 
 Spree::Product.prepend SpreeCustomizedStorefront::Spree::ProductDecorator
