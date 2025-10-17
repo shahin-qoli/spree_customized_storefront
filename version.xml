@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="#style"?>
-<!DOCTYPE UpdateLog [
+<!DOCTYPE UpdateHistory [
   <!ATTLIST xsl:stylesheet id ID #REQUIRED>
 ]>
 
-<UpdateLog version="1.2" releaseDate="2025-10-06">
+<UpdateHistory>
 
   <xsl:stylesheet id="style" version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="UTF-8" indent="yes"/>
@@ -12,7 +12,7 @@
     <xsl:template match="/">
       <html>
         <head>
-          <title>Update Log - Version <xsl:value-of select="UpdateLog/@version"/></title>
+          <title>Update History</title>
           <style>
             body {
               font-family: "Segoe UI", Arial, sans-serif;
@@ -27,7 +27,7 @@
               padding-bottom: 8px;
             }
             h2 {
-              margin-top: 24px;
+              margin-top: 32px;
               color: #0369a1;
             }
             ul {
@@ -49,49 +49,79 @@
               background: #ecfeff;
               border-left: 4px solid #06b6d4;
             }
+            .version-block {
+              margin-bottom: 60px;
+              padding-bottom: 40px;
+              border-bottom: 1px dashed #94a3b8;
+            }
           </style>
         </head>
         <body>
-          <h1>🧩 Update Log — Version <xsl:value-of select="UpdateLog/@version"/></h1>
-          <div class="meta">📅 Release Date: <xsl:value-of select="UpdateLog/@releaseDate"/></div>
+          <h1>🧩 Update History</h1>
 
-          <h2>🚀 Changes</h2>
-          <ul>
-            <xsl:for-each select="UpdateLog/Changes/Change">
-              <li><xsl:value-of select="."/></li>
-            </xsl:for-each>
-          </ul>
+          <xsl:for-each select="UpdateHistory/UpdateLog">
+            <!-- مرتب‌سازی نسخه‌ها از جدید به قدیم -->
+            <xsl:sort select="@releaseDate" order="descending"/>
 
-          <h2>💎 Updated Gems</h2>
-          <ul class="gem-list">
-            <xsl:for-each select="UpdateLog/UpdatedGems/Gem">
-              <li><xsl:value-of select="."/></li>
-            </xsl:for-each>
-          </ul>
+            <div class="version-block">
+              <h2>🚀 Version <xsl:value-of select="@version"/></h2>
+              <div class="meta">📅 Release Date: <xsl:value-of select="@releaseDate"/></div>
+
+              <h3>Changes</h3>
+              <ul>
+                <xsl:for-each select="Changes/Change">
+                  <li><xsl:value-of select="."/></li>
+                </xsl:for-each>
+              </ul>
+
+              <h3>Updated Gems</h3>
+              <ul class="gem-list">
+                <xsl:for-each select="UpdatedGems/Gem">
+                  <li><xsl:value-of select="."/></li>
+                </xsl:for-each>
+              </ul>
+            </div>
+          </xsl:for-each>
         </body>
       </html>
     </xsl:template>
   </xsl:stylesheet>
 
-  <Changes>
-    <Change>Fixed bugs in product price, availability, and taxon positions in Elastic mapping.</Change>
-    <Change>Fixed bug in order shipment splitting.</Change>
-    <Change>Added new endpoint for updating taxons of a product.</Change>
-    <Change>Added creation of incoming payment in B1 for a Manual Payment (e.g., Card to Card).</Change>
-    <Change>Fixed bug in checkout order — removed unavailable products from line items.</Change>
-    <Change>Fixed bug in updating price request.</Change>
-    <Change>Fixed product link in admin panel.</Change>
-    <Change>Removed Philia Club.</Change>
-    <Change>Fixed issue when the longest taxon didn’t have any products to show in related products.</Change>
-  </Changes>
+  <!-- 🆕 نسخه جدیدتر -->
+  <UpdateLog version="1.3" releaseDate="2025-10-17">
+    <Changes>
+      <Change>Vendor Panel initialized</Change>
 
-  <UpdatedGems>
-    <Gem>SpreeBrxSorter</Gem>
-    <Gem>SpreeBrxVendor</Gem>
-    <Gem>SpreeProductApi</Gem>
-    <Gem>SpreeB1Docs</Gem>
-    <Gem>SpreeCustomizedStorefront</Gem>
-    <Gem>SpreePriceManagement</Gem>
-    <Gem>SpreeBrxPhiliaClub</Gem>
-  </UpdatedGems>
-</UpdateLog>
+    </Changes>
+    <UpdatedGems>
+      <Gem>SpreeBrxVendor</Gem>
+    </UpdatedGems>
+  </UpdateLog>
+
+  <!-- نسخه فعلی تو -->
+  <UpdateLog version="1.2" releaseDate="2025-10-06">
+    <Changes>
+      <Change>Fixed bugs in product price, availability, and taxon positions in Elastic mapping.</Change>
+      <Change>Fixed bug in order shipment splitting.</Change>
+      <Change>Added new endpoint for updating taxons of a product.</Change>
+      <Change>Added creation of incoming payment in B1 for a Manual Payment (e.g., Card to Card).</Change>
+      <Change>Fixed bug in checkout order — removed unavailable products from line items.</Change>
+      <Change>Fixed bug in updating price request.</Change>
+      <Change>Fixed product link in admin panel.</Change>
+      <Change>Removed Philia Club.</Change>
+      <Change>Fixed issue when the longest taxon didn’t have any products to show in related products.</Change>
+      <Change>Fix remove product from elastic index when product is deleted.</Change>
+    </Changes>
+    <UpdatedGems>
+      <Gem>SpreeBrxSorter</Gem>
+      <Gem>SpreeBrxVendor</Gem>
+      <Gem>SpreeProductApi</Gem>
+      <Gem>SpreeB1Docs</Gem>
+      <Gem>SpreeCustomizedStorefront</Gem>
+      <Gem>SpreePriceManagement</Gem>
+      <Gem>SpreeBrxPhiliaClub</Gem>
+    </UpdatedGems>
+  </UpdateLog>
+
+</UpdateHistory>
+
