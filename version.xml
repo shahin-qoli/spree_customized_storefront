@@ -88,13 +88,20 @@
   </xsl:stylesheet>
 
   <!-- 🆕 نسخه جدیدتر -->
-  <UpdateLog version="1.3" releaseDate="2025-10-17">
+  <UpdateLog version="1.3" releaseDate="2025-10-21">
     <Changes>
       <Change>Vendor Panel initialized</Change>
+      <Change>Sitemap generation added to initalize app, and optimized</Change>
+      <Change>Safe products reindex added to initialize app</Change>
+      <Change>Fix bug in serialization of FReviews</Change>
+      <Change>Removed product caching for expired search endpoint</Change>
 
     </Changes>
     <UpdatedGems>
       <Gem>SpreeBrxVendor</Gem>
+      <Gem>SpreeBrxSitemap</Gem>
+      <Gem>SpreeBrxSorter</Gem>
+      <Gem>SpreeCustomizedStorefront</Gem>
     </UpdatedGems>
   </UpdateLog>
 

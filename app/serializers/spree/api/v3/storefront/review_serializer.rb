@@ -15,13 +15,14 @@ module Spree::Api
           .new(review.review_images)
           .serializable_hash[:data]
         end        
-        attribute :user do |review, params|
+        attribute :user do |review|
+
           data ||= { is_fake: review.is_fake, la_name: review.la_name, fi_name: review.fi_name }
           data[:is_fake] = review.is_fake
           data[:la_name] = review.la_name
           data[:fi_name] = review.fi_name
           Spree::V2::Storefront::UserReviewSerializer
-          .new(review.user,data)
+          .new(review.user,params: data)
           .serializable_hash[:data]
         end               
 

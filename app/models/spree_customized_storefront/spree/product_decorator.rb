@@ -168,7 +168,7 @@ module SpreeCustomizedStorefront::Spree::ProductDecorator
 	def update_in_product_cache
 		ids = []
 		ids.push(self.id)
-		Spree::CustomizedCaching::Product::Cache.new(ids).execute
+		# Spree::CustomizedCaching::Product::Cache.new(ids).execute
 		Spree::CustomizedCaching::Product::ProductTaxonCache.new(ids).execute
 		Spree::CustomizedCaching::Product::ProductSingleCache.new(self.variants.map(&:id)).execute
 	end
