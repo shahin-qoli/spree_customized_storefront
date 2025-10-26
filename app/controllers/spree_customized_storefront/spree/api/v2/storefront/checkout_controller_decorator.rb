@@ -7,7 +7,9 @@ module SpreeCustomizedStorefront::Spree
           def next
             spree_authorize! :update, spree_current_order, order_token
             removed_lines = []
-            if spree_current_order.state.eql?("address")
+            if (spree_current_order.state.eql?("address") || 
+              spree_current_order.state.eql?("delivery") || 
+              spree_current_order.state.eql?("payment") )
               spree_current_order.line_items.select do |item|
                 !item.variant || item.variant.discontinued? || item.insufficient_stock?
               end.flatten.each do |line_item| 
