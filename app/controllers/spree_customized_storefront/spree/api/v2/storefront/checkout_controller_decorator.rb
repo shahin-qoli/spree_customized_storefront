@@ -25,7 +25,7 @@ module SpreeCustomizedStorefront::Spree
               end
             end  
             @removed_lines = removed_lines # store it in ivar
-            result = next_service.call(order: spree_current_order)
+            result = next_service.call(order: spree_current_order.reload)
             render_order(result)
           end
 def render_order(result)

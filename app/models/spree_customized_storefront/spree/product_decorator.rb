@@ -169,8 +169,9 @@ module SpreeCustomizedStorefront::Spree::ProductDecorator
 		ids = []
 		ids.push(self.id)
 		# Spree::CustomizedCaching::Product::Cache.new(ids).execute
+		variant_ids = self.variants.map(&:id).empty? ? [self.master.id] : self.variants.map(&:id)
 		Spree::CustomizedCaching::Product::ProductTaxonCache.new(ids).execute
-		Spree::CustomizedCaching::Product::ProductSingleCache.new(self.variants.map(&:id)).execute
+		Spree::CustomizedCaching::Product::ProductSingleCache.new(variant_ids).execute
 	end
     # حذف محصول از ایندکس و پاک کردن کش
     def remove_from_index_and_cache
