@@ -89,13 +89,13 @@
   <UpdateLog version="1.3.2" releaseDate="2025-11-08">
     <Changes>
       <Change>Removed Elastic reindex</Change>
-
+      <Change>Change brand taxon to array</Change>
 
 
     </Changes>
     <UpdatedGems>
       <Gem>SpreeBrxSorter</Gem>
-
+      <Gem>SpreeCustomizedStorefront</Gem>
     </UpdatedGems>
   </UpdateLog>  
   <!-- 🆕 نسخه جدیدتر -->
