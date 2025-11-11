@@ -46,19 +46,8 @@ module SpreeCustomizedStorefront::Spree::ProductDecorator
 	end
 
 	def generate_brand
-		brand_taxons = taxons.select{|item| item.permalink.include?("brndh")}
-		case brand_taxons.size
-		when 1
-		brand_taxon = brand_taxons.last
-		when 0 
-		brand_taxon = nil
-		else
-		brand_taxon = brand_taxons.max_by { |t| t.permalink.to_s.size }
-		end
-
-		if brand_taxon.nil?
-			nil
-		else
+		taxons.select{|item| item.permalink.include?("brndh")}.
+		max_by(2) { |t| t.permalink.to_s.size }.map do |brand_taxon|
 			img = brand_taxon.icon
 			brand_image = if img.nil?
 				nil
@@ -80,7 +69,7 @@ module SpreeCustomizedStorefront::Spree::ProductDecorator
 				"original_url": img.original_url
 				}
 			end
-			taxon = {
+			result << {
 			"name": brand_taxon.name,
 			"pretty_name": brand_taxon.pretty_name,
 			"permalink": brand_taxon.permalink,
