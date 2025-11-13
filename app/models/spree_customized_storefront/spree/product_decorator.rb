@@ -69,7 +69,7 @@ module SpreeCustomizedStorefront::Spree::ProductDecorator
 				"original_url": img.original_url
 				}
 			end
-			result << {
+			{
 			"name": brand_taxon.name,
 			"pretty_name": brand_taxon.pretty_name,
 			"permalink": brand_taxon.permalink,
